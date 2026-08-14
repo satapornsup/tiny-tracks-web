@@ -1,0 +1,314 @@
+# Tiny Tracks Web — Interactive Story Site
+
+## ภาพรวมโปรเจกต์
+
+เว็บไซต์ interactive แนว "เกม/เรื่องเล่า" ให้ผู้ปกครองอ่านเนื้อเรื่อง ตอบคำถาม 6 ข้อ แล้วได้สรุปผล
+
+- ข้อควรปฏิบัติ + ถ่ายภาพ (Photo Booth) เพื่อโปรโมทแคมเปญ "Tiny Tracks"
+
+**Reference files** (ต้นฉบับอยู่ที่ `/Users/nongtub/Downloads/tiny tracks web/`):
+
+- `01.png` — flow diagram (state machine) ของทั้งเว็บ: START → STORY → HOME → Q1-Q6 → สรุปผล → ข้อควรปฏิบัติ → PHOTO BOOTH → CONCEPT + เมนู hamburger แยกต่างหาก
+- `02.png` — visual/screen-by-screen reference (มี wireframe จริงของแต่ละหน้า + flow arrow ปนกัน) — **ละเอียดกว่า 01.png** ควรยึดเป็นหลักตอนเขียน component
+- `element/` — asset ที่ designer export ออกมาแล้ว (PNG/WebP) แยกตามหมวด: `home/`, `ข้อควรปฎิบัติ/`, root
+
+> หมายเหตุ: ผู้ใช้บอกว่า "รูปแรก = visual" และ "รูปที่สอง = flow" แต่จากการเปิดไฟล์จริง มันสลับกัน — `01.png` คือ flow diagram ล้วนๆ, `02.png` คือ visual mockup ทุกหน้า พร้อม flow แทรกอยู่ด้วย เอกสารนี้อ้างอิงตามเนื้อหาจริงที่เห็นในไฟล์
+
+**Tech stack ที่กำหนด**:
+
+- Angular + TypeScript (standalone components, Signals สำหรับ state)
+- GSAP สำหรับ animation/transition (CSS ใช้กับ micro-interaction ง่ายๆ)
+- ใช้ asset ที่มีอยู่แล้ว — ไม่ออกแบบใหม่
+- ไม่ใช้ WebGL/Three.js (ดีไซน์ปัจจุบันทำได้หมดด้วย DOM + CSS + GSAP ไม่มีจุดไหนจำเป็นต้องใช้ WebGL)
+
+---
+
+## 1. Flow ทั้งหมด (ยืนยันจาก 01.png + 02.png)
+
+```
+START ──▶ STORY (คลิป → เนื้อเรื่อง ซูมเอกสาร) ──▶ HOME ──▶ Q1 ──▶ Q2 ──▶ Q3 ──▶ Q4 ──▶ Q5 ──▶ Q6
+                                                                                              │
+                                        ┌─────────────────────────────────────────────────────┤
+                                        ▼ (ถูก)                                     ▼ (ผิด)
+                                   สรุปผล 1                                    สรุปผล 2
+                                        └───────────────┬───────────────────────────┘
+                                                         ▼
+                                                ข้อควรปฏิบัติ (ร่วมกันทั้ง 2 path)
+                                                         ▼
+                                                   PHOTO BOOTH
+                                                         ▼
+                                                     CONCEPT
+```
+
+เมนู hamburger (มุมขวาบนของทุกหน้า ยกเว้น START) เปิด side drawer แบบ "แฟ้มเอกสาร" (folder-tab) เข้าถึงได้ทุกที่:
+`HOME · เนื้อเรื่อง (STORY) · ข้อควรปฏิบัติ · PHOTO BOOTH · CONCEPT`
+
+### แต่ละ Question มีเส้นทาง "ถูก" (เขียว) / "ผิด" (แดง) คู่ขนานกันตลอด
+
+สำคัญมาก — ต้อง confirm กับ designer/PM ก่อนเขียน logic จริง:
+
+- สีเขียว/แดงใน 02.png **เป็น annotation สำหรับ dev เท่านั้น** (บอกว่า choice ไหนคือ "ทางถูก/ทางผิด") ไม่ใช่ UI จริงที่ผู้เล่นเห็น ใช่ไหม? (สมมติฐานปัจจุบัน: ใช่)
+- กติกาคำนวณ "สรุปผล 1 (ถูก)" vs "สรุปผล 2 (ผิด)" จากคำตอบ 6 ข้อ คือแบบไหน — ต้องตอบ "ถูก" **ทุกข้อ** ถึงจะได้สรุปผล 1 หรือมี threshold (เช่น ≥4/6)? **ยังไม่มีสเปกนี้ ต้องถามก่อนเขียน `evaluateResult()`**
+
+---
+
+## 2. Angular Component Architecture
+
+แนะนำ **standalone components** ทั้งหมด + Angular **Signals** สำหรับ state (ไม่ใช้ NgRx — flow เชิงเส้นไม่ซับซ้อนพอจะคุ้ม)
+
+### 2.1 Routing
+
+ใช้ Angular Router เพื่อ deep-link/back-button ได้ แต่ page-transition (exit-then-enter, GSAP timeline) ควบคุมเองผ่าน `PageTransitionService` ไม่พึ่ง `@angular/animations` router-outlet animation (มันไม่พอสำหรับ timeline ซับซ้อนแบบนี้)
+
+```
+/                     → StartComponent
+/story                → StoryComponent (clip + เนื้อเรื่อง สอง step ในตัวเดียว)
+/home                 → HomeComponent
+/question/:id         → QuestionShellComponent (data-driven, id = 1-6)
+/result               → ResultComponent (อ่านจาก QuizStateService)
+/safety               → SafetyTipsComponent (ข้อควรปฏิบัติ)
+/photo-booth          → PhotoBoothComponent
+/concept              → ConceptComponent
+```
+
+### 2.2 Layout / Shared (ใช้ซ้ำทุกหน้า ยกเว้น Start)
+
+| Component                                                            | หน้าที่                                                                                                             | Asset อ้างอิง                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AppHeaderComponent`                                                 | แถบบนสุด: โลโก้ + ปุ่ม hamburger — มี `bare` input ทำ variant เปล่า (แถบสีพื้นล้วน ไม่มีโลโก้/ปุ่ม) ใช้ในหน้า Start | **implement แล้ว**: crop `หัว.webp` เฉพาะส่วนโลโก้+รอยหยักโค้ง (`header-tab.webp`, 1800×651) วางเป็น `<img>` ลอยทับมุมซ้ายบนของแถบสีพื้น CSS (สีตรงกับภาพเป๊ะ `#403630` เลยไม่มีรอยต่อ) — เหตุผลที่ยังใช้ raster ตรงนี้แทนวาด CSS เอง: เส้นโค้ง S-curve ของรอยหยักซับซ้อนเกินจะสร้างด้วย CSS ให้เป๊ะ, ส่วนแถบที่เหลือ (พื้นที่ส่วนใหญ่) ยังเป็นสีทึบ CSS ล้วนเพื่อยืดเต็มความกว้างจอได้ไม่จำกัด — hamburger เป็น SVG แยกอยู่แล้ว |
+| `SideMenuDrawerComponent`                                            | Drawer แบบ folder-tab เลื่อนออกจากขวา (HOME/เนื้อเรื่อง/ข้อควรปฏิบัติ/PHOTO BOOTH/CONCEPT)                          | ใช้ palette สีจาก `แฟ้ม.webp` (เขียว/ชมพู/น้ำตาล/ครีม) ทำเป็น flat CSS tab แทนภาพเดียว จะ animate ง่ายกว่า                                                                                                                                                                                                                                                                                                                       |
+| `ZoomOverlayComponent`                                               | Modal เต็มจอสำหรับ "ซูมดูเอกสาร" (ใช้ใน Story + ที่อื่นในอนาคต)                                                     | `zoomwebp.webp` (ไอคอนแว่นขยาย), `X.webp` (ปิด)                                                                                                                                                                                                                                                                                                                                                                                  |
+| `StickyNoteButtonComponent`                                          | ปุ่มขอบเส้นประโค้งมน เช่น "เนื้อเรื่อง ▶", "อ่านสัญญา →"                                                            | สร้างเป็น component เดียว รับ label + icon-direction แทนสร้างปุ่มใหม่ทุกที่                                                                                                                                                                                                                                                                                                                                                      |
+| `FolderTabStackComponent`                                            | ภาพแฟ้มเอกสารซ้อนกัน ใช้ตอนเปลี่ยนจากสรุปผล → ข้อควรปฏิบัติ                                                         | `แฟ้ม.webp`                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `CornerPaperPatternComponent`                                        | ลายตารางไม้หมากรุกมุมจอ (Start/Story)                                                                               | ควรขอ designer ทำเป็น seamless tile จะ responsive ดีกว่าภาพก้อนเดียว                                                                                                                                                                                                                                                                                                                                                             |
+| `ReducedMotionService` ไม่ใช่ component แต่ควรมีตั้งแต่แรก (ดูข้อ 7) |                                                                                                                     |                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+
+### 2.3 หน้าเนื้อหา
+
+- **`StartComponent`** — bg เต็มจอ (`start bg.webp` ผสมโลโก้ `logo bg.webp`) + ปุ่ม `start.webp`/`start bg.webp` (ปุ่ม START ขอบจุด) กด → ไป `/story`
+- **`StoryComponent`** — internal state 2 step (ไม่แยก route เพราะใช้ header/เลย์เอาต์เดียวกัน): `clip` (วิดีโอ + ปุ่ม SKIP) → `read` (ฉาก "เนื้อเรื่อง" มีเอกสาร/รูป/บัตร ให้กดแว่นขยายซูมดู 2 จุด) → ปุ่ม "อ่านสัญญา →" ไป `/home` หรือ `/question/1` (ต้อง confirm ว่า HOME คือหน้าคั่นจริงๆ หรือ Story ก็คือ Home — ดู Open Question ข้อ 8.4)
+- **`HomeComponent`** — ยังไม่มี mockup แยกชัดเจนจาก Story ใน 02.png (ดู Open Question)
+- **`QuestionShellComponent`** — 1 component กลาง ไม่สร้างแยกทีละข้อ รับ `QuestionConfig` (data-driven) แล้ว switch ไปเรนเดอร์ sub-widget ตาม `interactionType`:
+  - `QuestionSwipeCardComponent` — Q1 (การ์ดสไลด์ซ้าย/ขวาแบบโพสต์ IG + checkbox + ปุ่ม POST)
+  - `QuestionTexturePickerComponent` — Q4 (เลื่อนขึ้น/ลงเลือกผ้าคลุม แปะบนตัวละคร)
+  - `QuestionOutfitPickerComponent` — Q5 (กริดเสื้อผ้ารอบตัวละคร คลิกแล้ว equip แบบ live preview)
+  - `QuestionMultipleChoiceComponent` — Q2/Q3/Q6 (ยังไม่มี visual mockup แต่ confirm แล้วว่าเป็น "คำถาม + ช้อยให้ติก" — เลย์เอาต์ยังไม่ล็อก แต่ interaction type รู้แล้ว ดูข้อ 4 และข้อ 8)
+- **`CharacterStageComponent`** — ใช้ร่วมกันใน Q4/Q5: ตัวละครกลางจอ + ระบบ overlay ชั้นเสื้อผ้า/ผ้าคลุม (ดูข้อ 3.3 เรื่อง asset layering ที่ต้องขอ designer เพิ่ม)
+- **`ResultComponent`** — รับ path `'result1' | 'result2'` จาก `QuizStateService`, แสดง "สรุปผล 1/2" แล้ว auto-transition (ลูกศรเด้ง) ไป `/safety`
+- **`SafetyTipsComponent`** — การ์ดแฟ้มพลิกดู 7 ข้อ (`file 1.webp` ... `file 7.webp` — ปัจจุบันมีแยกแค่บางไฟล์ เช่น `file 1,7.webp` ใช้ template เดียวกัน 2 ที่, `file 2,4,5,6.webp`) + ไอคอน `ปลอดภัย.png`
+- **`PhotoBoothComponent`** / **`ConceptComponent`** — ยังไม่มี mockup เลย (ดู Open Question)
+
+---
+
+## 3. Asset: PNG/WebP vs SVG + Layer ที่ต้องขอ designer แยกเพิ่ม
+
+### 3.1 เก็บเป็น raster (PNG/WebP) ตามเดิม — ไม่ต้องแปลง
+
+Texture/painterly ทุกอย่างที่มีลาย grain, shadow, กระดาษ, ผ้า, ตัวละครลายเส้นสี:
+`start bg.webp`, ลายไม้หมากรุกมุมจอ, กระดาษ/เอกสารทุกใบ (`thesif ele-03.webp` ฯลฯ), ผ้าคลุม/ลายเสื้อผ้าทั้งหมด, ภาพตัวละคร, บัตร ID, รูปโพลารอยด์
+
+### 3.2 ควรทำ/ขอเป็น SVG แทน (หรือ dev สร้างเองด้วย CSS)
+
+ไอคอนที่ต้อง interactive (คลิก/hover/สเกล) หรือใช้ dashed-stroke animation:
+
+| ตอนนี้                                                        | ปัญหา                                      | แนะนำ                                                                                                                |
+| ------------------------------------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| Hamburger icon ถูก bake ไว้ใน `หัว.webp` เป็นพื้นหลังเดียวกัน | คลิกไม่ได้แยก, resize/animate ไม่ได้       | **implement แล้ว** — แยกเป็นปุ่ม SVG จริง วางทับบน header bar (โลโก้+รอยหยักโค้งยังคง crop จาก raster ไว้ ดูข้อ 2.2) |
+| `zoomwebp.webp` (แว่นขยาย+วงจุดประ)                           | raster, animate scale ตอน hover ได้แต่หยาบ | SVG เพื่อทำ dash-offset "วาดวงกลม" ตอน entrance ได้                                                                  |
+| `X.webp` (ปุ่มปิด)                                            | เหมือนกัน                                  | SVG                                                                                                                  |
+| ลูกศร ◀▶ (Q1), ▲▼ (Q4), → (ปุ่มต่างๆ)                         | ปัจจุบัน bake ในภาพปุ่ม                    | แยกเป็น SVG icon + CSS/HTML text label เพื่อรองรับ i18n/hover state                                                  |
+| ปุ่ม START (ข้อความ "START" bake เป็นภาพ)                     | เปลี่ยนข้อความ/ภาษาไม่ได้                  | ถ้า font ที่ใช้เป็น web font ได้ ให้ทำเป็น dotted-pill SVG + `<span>START</span>` จริง                               |
+
+### 3.3 Layer ที่ "ภาพรวม" ปัจจุบันเป็นภาพ flatten เดียว → ต้องขอ designer แยกเลเยอร์ใหม่ (สำคัญสุด สำหรับ GSAP stagger)
+
+`home.png` และ `แฟ้ม.webp` (ฉาก "โต๊ะทำงาน" ที่มีสัญญา, บัตร, รูป, คลิปหนีบ, ดินสอ, ยางลบ, สติกเกอร์โลโก้) **เป็นภาพ composite เดียว** — ถ้าอยากได้ entrance animation แบบของแต่ละชิ้นทยอยบิน/หล่นเข้ามา (ตาม theme "ของบนโต๊ะ") **ต้องขอ export แยก PNG โปร่งใสต่อชิ้น**:
+
+- กระดาษสัญญาแผ่นหลัง (พื้น)
+- กระดาษสัญญาแผ่นบน (มีตัวหนังสือ)
+- กระดาษสามเหลี่ยมสีเขียว / สีชมพู (ของตกแต่ง)
+- ดินสอ, ยางลบ
+- รูปโพลารอยด์ + คลิปหนีบกระดาษ (แยกกัน ถ้าอยากได้ anim "คลิปหนีบติดเข้าไป")
+- บัตร ID
+- ป้ายสติกเกอร์โลโก้ "TINY TRACKS"
+- ตราปั๊มสีชมพูเฉียงมุมล่างขวา
+
+### 3.4 ตัวละคร (Q4/Q5) — ต้อง confirm รูปแบบกับ designer ก่อนออกแบบ component
+
+จากภาพ Q5 (dress-up): ฝั่งถูก 4 ชุด, ฝั่งผิด 12 ชุด (แยกเสื้อบน/ล่างเป็นกริดคู่) — คำถามสำคัญที่กระทบ component design โดยตรง:
+
+- **แบบ A (layer-swap)**: ตัวละคร pose เดียวคงที่ + เสื้อ/ผ้าท่อนบน-ล่างเป็น PNG แยกชิ้น overlay ตำแหน่งตายตัว → เบากว่า, reusable, แนะนำแบบนี้
+- **แบบ B (full redraw)**: แต่ละชุดคือภาพตัวละครเต็มตัววาดใหม่ทั้งภาพ (Q5 ฝั่งผิดจะมี 12 ภาพเต็มตัว) → หนักกว่า แต่ถ้าท่าทาง/มุมกล้องเปลี่ยนตามชุด จำเป็นต้องทำแบบนี้
+
+Q4 (ผ้าคลุม) ฝั่งถูกมี ~8 ตัวเลือก ฝั่งผิดมีแค่ 1 — ต้อง confirm ว่าตั้งใจ asymmetric แบบนี้จริง หรือ mockup ฝั่งผิดยังทำไม่ครบ
+
+### 3.5 Start screen — mockup เต็มที่ได้รับมา (ตกแต่งรอบโลโก้)
+
+Mockup ใหม่ (เต็มฉาก): แถบ header เรียบด้านบน (ไม่มีโลโก้/hamburger — ดูข้อ "Header variant" ด้านล่าง) + พื้นครีม + ของตกแต่งกระจายรอบโลโก้ตรงกลาง (บัตร ID, คลิปหนีบกระดาษหลายตัว, ดินสอ, ยางลบ, แก้วกาแฟ, ชุดนักเรียน/เสื้อ, ตุ๊กตาหมีโผล่มุมล่าง) + ปุ่ม START + แถบล่างสีน้ำตาลรูปหูหมี
+
+**ของตกแต่งรอบโลโก้ (บัตร ID / คลิปหนีบ / ดินสอ / ยางลบ / แก้วกาแฟ / เสื้อ / ตุ๊กตาหมี)**
+สไตล์เป็น flat illustration เส้นตัดชัด สีทึบ ไม่ใช่ painterly/gradient หนักแบบพื้นผิวกระดาษ — เข้าเกณฑ์ SVG ได้เลยถ้า designer วาดในโปรแกรม vector (Illustrator/Figma) อยู่แล้ว (เกือบทุกงาน flat cartoon แบบนี้เป็น vector source ตั้งแต่ต้น ไม่ใช่ painterly) → **ควรขอเป็น SVG** เพราะ:
+
+- คมทุกขนาดจอ ไม่แตกเวลาจอใหญ่ (raster ขยายแล้วเบลอ)
+- แยก entrance animation ทีละชิ้นได้ตรงตาม `StaggerRevealDirective` ที่วางแผนไว้ (ข้อ 9) — ทยอยบิน/หมุนเข้าเหมือนของหล่นบนโต๊ะ
+- คลิปหนีบกระดาษที่ซ้ำกันหลายตัว (มุมต่างกัน) **ขอมาแบบเดียวพอ** แล้ว dev หมุน/ย่อ-ขยาย/จัดตำแหน่งเองด้วย CSS transform — ไม่ต้องให้ designer ทำแยกทุกมุม ประหยัดงาน design
+- ตุ๊กตาหมี ถ้ามีขนสัตว์/shading ที่ต้อง gradient เยอะ (ต่างจากของชิ้นอื่นที่แบนสี) อาจต้องเป็น PNG โปร่งใสแทน — ให้ designer ส่งมาเป็น SVG ก่อน ถ้าทำไม่ได้ค่อย fallback PNG แยกชิ้นจากพื้นหลัง
+
+**ปุ่ม START**
+เดิม `start bg.webp` เป็นภาพ raster เดียว (pill + เส้นประ + ตัวอักษร "START" ฝังในภาพ) ตอนนี้แนะนำเปลี่ยนเป็น:
+
+- Pill + เส้นประ → **SVG** (ใช้ `stroke-dasharray` ทำเส้นประจริงในโค้ด ไม่ต้อง raster) — ได้ทั้งความคมชัดทุกขนาด และทำ dash-offset "วาดกรอบ" ตอน entrance ได้ (ตาม §5 GSAP list)
+- ตัวอักษร "START" → ถ้า designer มีไฟล์ font ที่ใช้ในโลโก้ (มันคือ custom rounded font เดียวกับ "TINY TRACKS") ให้ขอไฟล์ `.woff2` มาด้วย จะได้ใส่เป็น `<span>START</span>` จริงแทนการ bake เป็นภาพ — แก้ข้อความ/ทำหลายภาษาได้ในอนาคต (ตรงกับ Open Question ข้อ 8.9 ที่เคยตั้งไว้)
+- ถ้าไม่มีไฟล์ font ให้ใช้ได้ (ติด license) → fallback เป็นภาพคำว่า "START" แยกชิ้นจาก pill (อย่างน้อยให้ pill เป็น SVG ปรับสี/ขนาดได้อิสระ)
+
+**Footer แถบล่างสีน้ำตาล (เส้นมีหูหมี)**
+รูปทรงเป็นแท่งแบนพาดเต็มความกว้างจอ มีปุ่มโค้งมนคล้ายหูหมีสองข้าง (ซ้าย-ขวา) โผล่ขึ้นมา — **แก้ไข: ไม่ใช่สีทึบล้วน มีลายไม้ (wood grain texture)** ดังนั้นไม่ใช่ SVG/CSS สีทึบเหมือนที่เข้าใจตอนแรก เพราะลายไม้เป็น texture ภาพถ่าย/painterly ไม่ใช่ flat vector shape — ต้องเป็น **raster (PNG/WebP)** ยังคงพาดเต็มจอทุกขนาดหน้าจอโดยไม่เบลอ/ไม่ยืดเพี้ยนตรงลายไม้ได้ด้วยเทคนิค "3-slice" เหมือนเดิม แค่เปลี่ยนวิธีทำส่วนกลาง:
+
+1. ชิ้นหูหมี 1 ข้าง — raster (PNG/WebP โปร่งใส) ขอ designer มา 1 ไฟล์ ใช้ CSS `transform: scaleX(-1)` กลับด้านทำอีกข้าง ไม่ต้องขอ 2 ไฟล์
+2. เส้นตรงกลาง — ขอ designer เป็น **wood-grain texture แบบ seamless tile** (ไฟล์ raster เล็กๆ ที่ต่อกันซ้ำแล้วไม่เห็นรอยต่อ เช่น 300×60px) แล้ว dev ใช้ CSS `background-repeat: repeat-x` ให้มันเรียงต่อกันเต็มความกว้างจอ — **ห้ามยืดภาพเดียว** (`preserveAspectRatio="none"` หรือ stretch) เพราะลายไม้จะเบลอ/บิดเบี้ยวเห็นชัดเจนเมื่อยืด ต้องเป็นการ "เรียงต่อ" (tile) ไม่ใช่ "ยืด" (stretch) — สีพื้นของลายไม้ตรงกลางกับหูหมีสองข้างต้องให้ designer ทำให้กลืนกัน (สี/เฉดใกล้เคียงกัน) ไม่งั้นจะเห็นรอยต่อระหว่างชิ้น
+
+- ตุ๊กตาหมีที่โผล่พ้นแถบขึ้นมา (มี fur texture/shading) → แยกเป็นคนละ layer จากแถบ เก็บเป็น PNG โปร่งใส (ตามกฎ §3.1 ตัวละคร/ของมี shading เก็บ raster)
+
+**Header ของหน้า Start**
+ยืนยันแล้วว่า **ไม่ใช่ header เดียวกับหน้าอื่น** — หน้า Start ใช้ variant "เปล่า" (แถบสีพื้นล้วน ไม่มีโลโก้/hamburger/รอยหยักโค้งใดๆ) ส่วน header แบบเต็ม (โลโก้+รอยหยักโค้งจาก asset จริง+hamburger) ใช้ตั้งแต่หน้า Story เป็นต้นไป — **implement แล้ว**: เพิ่ม `bare` input ให้ `HeaderComponent` (`<app-header [bare]="true" />` ใน `StartComponent`) เมื่อ `bare` เป็น true จะไม่ render อะไรใน header เลยนอกจากแถบสีพื้น
+
+> เคยลองทำ "เปล่า" ให้มีรอยเฉียง/หยักด้วย (`clip-path` diagonal) เข้าใจผิดว่าเป็น mockup ใหม่ที่ user ส่งมา — จริงๆ คือ screenshot จาก build เวอร์ชันที่ผิดของ dev เอง ไม่ใช่ reference ใหม่ **แก้ไขแล้ว**: bare กลับไปเป็นแถบเปล่าล้วนตามเดิม ส่วนรอยหยักโค้งจริงเอาไปใช้ในแถบเต็ม (§2.2) แทน — บทเรียน: เจอ screenshot ที่ไม่ชัดว่าเป็น reference ใหม่หรือ build ปัจจุบัน ให้เช็คกับ asset ต้นฉบับ (`หัว.webp`) ก่อนเดา
+
+---
+
+## 4. Interaction ต่อ Question
+
+| Question | Interaction                                       | รายละเอียด                                                                                                                                                                                                                    |
+| -------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q1       | Swipe/เลื่อนการ์ดแบบโพสต์ IG                      | ปุ่มลูกศร ◀▶ เลื่อนดู 2 ตัวเลือกภาพ, มี checkbox (เช่น "ปลอดภัย"), ปุ่ม POST ยืนยันคำตอบ                                                                                                                                      |
+| Q2       | คำถาม + ช้อยให้ติกเลือกคำตอบ                      | ยังไม่มี visual mockup (เลย์เอาต์/จำนวนช้อย/การ์ดหรือลิสต์) — ใช้ `QuestionMultipleChoiceComponent` แบบ data-driven (options เป็น array ใน `QuestionConfig`) ไปก่อน รอดีไซน์มา swap เลย์เอาต์ทีหลังได้โดยไม่กระทบ state/logic |
+| Q3       | คำถาม + ช้อยให้ติกเลือกคำตอบ                      | เหมือน Q2                                                                                                                                                                                                                     |
+| Q4       | เลื่อนขึ้น/ลง (▲▼) เลือกลายผ้า แปะบนตัวละคร       | single-select, ใช้ `CharacterStageComponent` overlay ผ้าคลุม                                                                                                                                                                  |
+| Q5       | คลิกไอเทมจากกริดรอบตัวละคร equip แบบ live preview | เสื้อบน+ล่างแยกกริด, แนะนำเพิ่มปุ่ม POST/ยืนยันแบบเดียวกับ Q1 เพื่อความสม่ำเสมอ                                                                                                                                               |
+| Q6       | คำถาม + ช้อยให้ติกเลือกคำตอบ                      | เหมือน Q2/Q3 — แต่เป็นข้อสุดท้ายที่ตัดสินผลลัพธ์ (ดูข้อ 8.1 เรื่องกติกาคำนวณสรุปผล ยังต้อง confirm)                                                                                                                           |
+
+### 4.1 `QuestionMultipleChoiceComponent` (Q2/Q3/Q6) — สิ่งที่ล็อกได้แล้ว vs ยังรอดีไซน์
+
+**ล็อกได้แล้ว** (ไม่ต้องรอ mockup ก็เริ่มเขียนได้):
+
+- โครงสร้าง `QuestionConfig.options: { id, label, value, isCorrect }[]` — data-driven เหมือน Q1/Q4/Q5
+- ปุ่มติก/เลือกใช้ pattern เดียวกับ checkbox ใน Q1 (คลิกแล้วเปลี่ยน state ทันที ไม่มี swipe/drag)
+- ใช้ `AppHeaderComponent` + `StickyNoteButtonComponent` (ปุ่มยืนยัน/ถัดไป) เหมือนหน้าอื่น เพื่อความสม่ำเสมอ
+
+**ยังต้องรอ designer confirm** (ไม่กระทบ state/logic แค่กระทบหน้าตา — ใส่ทีหลังได้):
+
+- เลย์เอาต์ช้อย: การ์ดเรียงแนวตั้ง / กริด 2 คอลัมน์ / ปุ่มยาวเต็มความกว้าง
+- เลือกได้กี่ข้อ: single-select (เหมือน radio, ตอบได้ 1) หรือ multi-select (ติกได้หลายข้อ) — "ติก" ในคำที่ user ใช้ชวนคิดว่าเป็น checkbox/multi-select แต่ต้อง confirm ก่อนเขียน validation
+- ธีมภาพ/ไอคอนประกอบแต่ละช้อย (มีรูปประกอบเหมือน Q1 หรือเป็น text ล้วน)
+
+---
+
+## 5. CSS vs GSAP — เกณฑ์แบ่ง
+
+**ใช้ CSS** เมื่อ: elements เดียว, property เดียว/สองอย่าง, ไม่ต้อง sequence/reverse ระหว่างทาง
+
+- hover/press ปุ่ม (scale 0.97, สีเปลี่ยน)
+- sticky-note button "หายใจ" เบาๆ (rotate ±1deg loop)
+- fade toggle ง่ายๆ (backdrop modal)
+- responsive layout ทั้งหมด (grid/flex ล้วนๆ ไม่มี animation lib เกี่ยวข้อง)
+
+**ใช้ GSAP** เมื่อ: หลาย element ต้อง stagger/sequence, ต้อง interrupt/reverse ได้, หรือ driven by dynamic data (เช่น ตำแหน่งคลิก):
+
+- ฉาก "ของบนโต๊ะ" ใน Story/Home entrance (stagger ทยอยเข้า พร้อม rotate เล็กน้อยให้ดูเหมือนโยนลงโต๊ะ)
+- เปิด/ปิด zoom overlay (scale+fade จากตำแหน่งไอคอนที่คลิก, ใช้ FLIP-style transform-origin)
+- Q1 swipe card transition ระหว่าง 2 ตัวเลือก
+- Q4 texture carousel เลื่อนขึ้น/ลง
+- Q5 equip animation (เสื้อผ้า fade/scale ลงตัวละคร)
+- transition สรุปผล → ข้อควรปฏิบัติ (folder เปิด, ลูกศรเด้งวนลูป)
+- page transition หลักทุกหน้า (ข้อ 6)
+- side drawer เปิด/ปิดแบบ tab ทยอย cascade
+
+---
+
+## 6. Page Transition
+
+แนะนำ **ไม่ใช้ Angular Router animation hook โดยตรง** (ควบคุม timing ยาก) — ทำ `PageTransitionService` กลางที่ทุกหน้าต้องเรียกผ่านจุดเดียว แล้วให้ router แค่ swap component หลัง exit-animation จบ (deferred activation)
+
+รูปแบบ transition แยกตามช่วง:
+
+| จาก → ไป                                  | ทรานซิชัน                                   | เหตุผล                           |
+| ----------------------------------------- | ------------------------------------------- | -------------------------------- |
+| Start → Story                             | cross-fade bg + ปุ่ม START ขยายทะลุจอ       | โมเมนต์เปิดเรื่อง                |
+| Story: clip → เนื้อเรื่อง                 | slide-up (bottom sheet feel)                | เข้าธีม "สบายๆ" ของปุ่ม SKIP     |
+| Story → Question 1                        | slide-left + rotate เบาๆ (พลิกหน้ากระดาษ)   | ตรงธีมกระดาษ/โต๊ะทำงาน           |
+| Question → Question                       | slide-left สม่ำเสมอ (เหมือนเลื่อน carousel) | ให้ความรู้สึก progress ต่อเนื่อง |
+| Q6 → สรุปผล                               | wipe/scale-punch แรงกว่าอันอื่น             | เป็นโมเมนต์เฉลย ต้องเด่น         |
+| สรุปผล → ข้อควรปฏิบัติ/PhotoBooth/Concept | folder-open motif (จาก `แฟ้ม.webp`)         | เนื้อหาดูเหมือน "หยิบออกจากแฟ้ม" |
+
+ทุก transition เรียกผ่าน `pageTransitionService.transitionTo(type, opts)` เดียว ไม่เขียน timeline ซ้ำในแต่ละ component
+
+---
+
+## 7. State ของคำตอบ → สรุปผล 1/2
+
+`QuizStateService` (`providedIn: 'root'`, ใช้ Signals):
+
+```ts
+answers = signal<Record<QuestionId, AnswerValue>>({});
+result = computed(() => evaluateResult(answers())); // logic ต้อง confirm สเปกก่อน (ดูข้อ 8.1)
+```
+
+- แต่ละ `QuestionConfig` ประกาศ `correctValues` ของตัวเอง
+- Persist ลง `sessionStorage` (ไม่ใช้ `localStorage`) กัน refresh กลางเกมแล้วข้อมูลหาย แต่ก็ไม่ค้างข้ามรอบเล่นใหม่ — reset ตอนกลับไป Start
+- `resultPath: Signal<'result1' | 'result2' | null>` ให้ `ResultComponent` และหน้าถัดไปอ่านได้ (ต้อง confirm ว่า ข้อควรปฏิบัติ/PhotoBooth/Concept เนื้อหาต่างกันตาม path หรือใช้ร่วมกัน — จาก flow diagram ดูเหมือนใช้ร่วมกัน)
+
+---
+
+## 8. Open Questions — ต้องถาม designer/PM ก่อนเริ่มเขียนโค้ดจริง
+
+1. **กติกาคำนวณสรุปผล 1 vs 2** จากคำตอบ 6 ข้อ (ต้องถูกทุกข้อ? หรือมี threshold?) — บล็อกการเขียน `QuizStateService`
+2. สีเขียว/แดงใน mockup เป็น **annotation สำหรับ dev เท่านั้น** ใช่ไหม (ไม่ใช่ UI จริงที่ผู้เล่นเห็น)
+3. Q2, Q3, Q6 confirm แล้วว่าเป็น "คำถาม + ช้อยให้ติก" (multiple choice) — เริ่มเขียน `QuestionMultipleChoiceComponent` แบบ data-driven ได้เลย (ดูข้อ 4.1) แต่ยังต้องรอ designer เรื่อง: เลือกได้ข้อเดียวหรือหลายข้อ (single vs multi-select), เลย์เอาต์การ์ด/กริด, มีรูปประกอบช้อยไหม
+4. **STORY vs HOME** — จาก 02.png เห็นแค่ฉากเดียวก่อนเข้า Q1 (เนื้อเรื่อง+ซูมเอกสาร) ไม่เห็นหน้า HOME แยก คือ HOME ใช้ template เดียวกับ Story เปลี่ยนแค่เนื้อหา หรือเป็นคนละหน้าจริงๆ?
+5. Q4: ฝั่ง "ถูก" มีผ้า ~8 ลาย ฝั่ง "ผิด" มีแค่ 1 — ตั้งใจ asymmetric จริงไหม
+6. Q5: ระบบเปลี่ยนชุดเป็น layer-swap (เสื้อ/กางเกงแยกชิ้น) หรือ full-character redraw ต่อชุด (กระทบจำนวน asset และ component design โดยตรง — ดูข้อ 3.4)
+7. PHOTO BOOTH และ CONCEPT ยังไม่มี mockup เลย — ต้องได้ดีไซน์ก่อนเริ่ม
+8. หน้า "คลิป" (วิดีโอ) ใน Story เป็นไฟล์วิดีโอจริง (mp4) หรือ animated sequence ที่ทำเอง — ต้องรู้ format
+9. ข้อความในเอกสารที่ซูม (เช่น `thesif ele-03.webp`) ปัจจุบัน bake เป็นภาพ — ถ้าต้องแก้ข้อความ/ทำหลายภาษาในอนาคต ควรแยกเป็น HTML text overlay บนพื้นกระดาษเปล่าแทนไหม
+
+---
+
+## 9. Reusable Animation Utility/Service ที่ควรสร้างตั้งแต่ต้น
+
+1. **`GsapAnimationService`** — wrap การสร้าง `gsap.timeline()`, เก็บ registry ของ timeline ที่ active เพื่อ `kill()` ตอน component destroy (กัน memory leak), เช็ก `ReducedMotionService` ก่อนรันทุกครั้ง
+2. **`PageTransitionService`** — จุดเดียวสำหรับทุก transition ระหว่างหน้า (ข้อ 6)
+3. **`StaggerRevealDirective`** (`appStaggerReveal`) — ติดที่ container แล้ว auto-stagger fade+slide-up ให้ children โดยไม่ต้องเขียน timeline มือทุกหน้า (ใช้กับฉากโต๊ะทำงาน, กริดเสื้อผ้า Q5)
+4. **Swipe/Drag directive** (GSAP Draggable หรือ Angular CDK drag + GSAP easing สำหรับ snap-back) — ใช้ร่วมกันทั้ง Q1 (card) และ Q4 (texture carousel) แทนเขียนแยก 2 ที่
+5. **`ZoomOverlayService`** — เปิด modal ซูมแบบคำนวณ transform-origin จากตำแหน่งไอคอนที่คลิกจริง (FLIP-style) ใช้ได้ทั้ง Story doc-zoom และจุดอื่นในอนาคต
+6. **`ReducedMotionService`** — เช็ก `prefers-reduced-motion` แต่แรก ให้ animation service อื่นทุกตัวอ่านค่านี้ก่อนรัน (accessibility ควรมีตั้งแต่ day 1 ไม่ใช่แปะทีหลัง)
+
+---
+
+## 10. Asset Checklist ที่ต้องขอ designer เพิ่ม (สรุปจากข้อ 3)
+
+- [ ] Q2, Q3, Q6 — visual mockup ของ "คำถาม + ช้อยให้ติก" (เลย์เอาต์ช้อย, single/multi-select, รูปประกอบช้อยถ้ามี)
+- [ ] Start scene decorations เป็น **SVG** แยกชิ้น: บัตร ID, คลิปหนีบกระดาษ (1 แบบพอ), ดินสอ, ยางลบ, แก้วกาแฟ, เสื้อ/ชุดนักเรียน (ตุ๊กตาหมี fallback PNG ถ้ามี shading เยอะ) — ดูข้อ 3.5
+- [ ] ปุ่ม START เป็น SVG (pill + เส้นประ) แยกจากตัวอักษร + ไฟล์ web font (`.woff2`) ของฟอนต์ที่ใช้ใน "START"/โลโก้ ถ้าให้ได้ — ดูข้อ 3.5
+- [ ] Footer แถบล่างหูหมี — raster 2 ชิ้น: (1) หูหมี 1 ข้าง PNG/WebP โปร่งใส (2) wood-grain texture แบบ seamless tile สำหรับเส้นกลาง (ใช้ CSS `background-repeat: repeat-x` ไม่ใช่ยืดภาพ) — ดูข้อ 3.5
+- [ ] PHOTO BOOTH, HOME (ถ้าแยกจาก Story จริง) — mockup
+- [ ] CONCEPT — mockup
+- [ ] ฉาก "โต๊ะทำงาน" (`home.png` / `แฟ้ม.webp`) — แยกเลเยอร์ต่อชิ้น พื้นหลังโปร่งใส (ดูรายการข้อ 3.3)
+- [ ] ตัวละคร Q4/Q5 — export ตามแบบที่ confirm แล้ว (layer-swap หรือ full redraw, ดูข้อ 3.4)
+- [x] ไอคอน hamburger — แยกเป็น SVG แล้ว (ดู §2.2)
+- [ ] close (X), แว่นขยาย, ลูกศรทุกทิศ — SVG แยกจากพื้นหลัง (ปัจจุบัน bake ในภาพ)
+- [ ] ลายตารางไม้หมากรุกมุมจอ — seamless tile version
+- [ ] `file 2.webp`, `file 3.webp`, `file 4.webp`, `file 5.webp`, `file 6.webp` ของข้อควรปฏิบัติ (ตอนนี้มีไม่ครบ/ใช้ไฟล์ร่วมกันบางเบอร์) — ตรวจว่าครบ 6-7 ใบจริงหรือยัง
+
+---
+
+## Development Setup
+
+- Package manager: **pnpm**
+- Angular 19 standalone components, Signals-based state — scaffold แล้วด้วย `ng new --directory=. --style=scss --routing --ssr=false`
+- Asset folder เป็น Angular 19 default คือ `public/assets/images/...` (ไม่ใช่ `src/assets/`) — copy จาก `/Users/nongtub/Downloads/tiny tracks web/element/` เข้ามาทีละไฟล์ตามต้องใช้จริง ไม่ copy ยกโฟลเดอร์
+- GSAP (+ Draggable plugin ตามต้องการ) — core only, ไม่ใช้ ScrollTrigger เพราะดีไซน์ปัจจุบันไม่มี scroll-driven effect — ติดตั้งแล้ว (`pnpm add gsap`) ยังไม่ได้เริ่มใช้จริง
+- Dev server รันที่ port **4300** ไม่ใช่ 4200 (4200 ชนกับ project อื่นในเครื่อง) — ดู `.claude/launch.json`
+- **Tailwind CSS v4** ติดตั้งแล้ว (`pnpm add -D tailwindcss @tailwindcss/postcss postcss`) — setup แบบ CSS-first ของ v4 ไม่มี `tailwind.config.js`:
+  - `.postcssrc.json` เปิดใช้ `@tailwindcss/postcss` plugin
+  - `src/tailwind.css` มีแค่ `@import "tailwindcss";` — เป็นไฟล์ `.css` เปล่าๆ ไม่ใช่ `.scss` เพราะ Tailwind v4 ใช้ CSS syntax ใหม่ (`@property`, nested `@layer`) ที่ Sass compiler อ่านไม่ผ่าน ต้องแยกออกจาก `styles.scss`
+  - `angular.json` เพิ่ม `src/tailwind.css` ไว้**ก่อน** `src/styles.scss` ใน `styles[]` (ทั้ง `build` และ `test` target) ให้ Tailwind base/reset โหลดก่อน แล้ว custom global styles ของเราทับทีหลัง
+  - **Convention: Hybrid** — ใช้ Tailwind utility class ใน HTML สำหรับ layout ทั่วไป (flex/gap/grid/spacing เช่นหน้า Q2/Q3/Q6 ที่เป็น list ธรรมดา) ส่วน SCSS ต่อ component ยังคงไว้สำหรับจุดที่ผูกกับ asset/ดีไซน์เฉพาะ (header curve, ตำแหน่งของตกแต่งที่ scatter/หมุน, สี custom property) — เหตุผล: งานหลักของเว็บนี้เป็น custom visual ที่ Tailwind utility ช่วยไม่ได้มาก แต่ layout ทั่วไปใช้ Tailwind ลด boilerplate ได้
