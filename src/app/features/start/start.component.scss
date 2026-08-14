@@ -7,38 +7,31 @@
   gap: 40px;
   min-height: calc(100dvh - 64px);
   padding: 40px 24px;
-  overflow: hidden;
   background: var(--color-paper);
 
   &__decor {
     position: absolute;
     pointer-events: none;
-
-    img {
-      display: block;
-      width: 100%;
-      /* filter lives on the un-rotated img, not the rotated wrapper —
-         Safari clips drop-shadow when it shares an element with transform */
-      filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.16));
-    }
+    display: block;
+    /* rotation + drop-shadow are baked into the image pixels themselves
+       (see public/assets/images/start/decor/) instead of live CSS
+       transform+filter — Safari has a persistent bug where a filter's
+       shadow region is computed in un-rotated space and doesn't follow
+       an ancestor's rotation, clipping the shadow to an axis-aligned box
+       that stays screen-aligned while the content rotates inside it.
+       No live filter/transform means nothing for that bug to clip. */
   }
 
   &__decor--id-card {
-    --decor-top: 10px;
-    --decor-left: 80px;
-    --decor-width: min(290px, 38vw);
-    --decor-rotate: -16deg;
-
-    top: var(--decor-top);
-    left: var(--decor-left);
-    width: var(--decor-width);
-    transform: rotate(var(--decor-rotate));
+    top: -30px;
+    left: 15px;
+    width: min(380px, 36vw);
+    height: auto;
 
     @media (max-width: 640px) {
-      --decor-top: 14px;
-      --decor-left: 14px;
-      --decor-width: min(150px, 42vw);
-      --decor-rotate: -12deg;
+      top: -15px;
+      left: 15px;
+      width: min(280px, 44vw);
     }
   }
 
