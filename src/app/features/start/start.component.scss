@@ -13,7 +13,14 @@
   &__decor {
     position: absolute;
     pointer-events: none;
-    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.16));
+
+    img {
+      display: block;
+      width: 100%;
+      /* filter lives on the un-rotated img, not the rotated wrapper —
+         Safari clips drop-shadow when it shares an element with transform */
+      filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.16));
+    }
   }
 
   &__decor--id-card {
