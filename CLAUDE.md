@@ -173,6 +173,18 @@ Mockup ใหม่ (เต็มฉาก): แถบ header เรียบด
 
 > เคยลองทำ "เปล่า" ให้มีรอยเฉียง/หยักด้วย (`clip-path` diagonal) เข้าใจผิดว่าเป็น mockup ใหม่ที่ user ส่งมา — จริงๆ คือ screenshot จาก build เวอร์ชันที่ผิดของ dev เอง ไม่ใช่ reference ใหม่ **แก้ไขแล้ว**: bare กลับไปเป็นแถบเปล่าล้วนตามเดิม ส่วนรอยหยักโค้งจริงเอาไปใช้ในแถบเต็ม (§2.2) แทน — บทเรียน: เจอ screenshot ที่ไม่ชัดว่าเป็น reference ใหม่หรือ build ปัจจุบัน ให้เช็คกับ asset ต้นฉบับ (`หัว.webp`) ก่อนเดา
 
+### 3.6 บั๊ก Safari กับ `filter: drop-shadow()` บน element ที่หมุน — เจอกับ decor บัตร ID แล้ว
+
+**อาการ**: เงา (`filter: drop-shadow()`) ของ `id-card` (บัตรที่หมุน `rotate(-16deg)`) โดนตัดเป็นกรอบสี่เหลี่ยม **ที่ไม่หมุนตามบัตร** (กรอบค้างอยู่ตามแนวจอ) — เกิดเฉพาะ Safari (macOS และ iOS ทั้งคู่) Chrome ปกติดี
+
+**สาเหตุจริง**: Safari/WebKit คำนวณพื้นที่ render ของ `filter` เป็นกล่องแบบไม่หมุนตาม ancestor ที่มี `transform: rotate()` — ไม่ว่า `filter` กับ `rotate` จะอยู่ element เดียวกันหรือแยกเป็น parent/child ก็ยังเป็นปัญหาเดิม (**แยก element ไม่ช่วย** ต่างจากที่คนแนะนำกันทั่วไปสำหรับบั๊ก Safari filter อีกแบบหนึ่ง)
+
+**สิ่งที่ลองแล้วไม่เวิค** (เรียงตามลำดับที่ลอง): แยก `rotate`(wrapper)/`filter`(img) คนละ element, ใส่ `width`/`height`/`aspect-ratio` ชัดเจน, `transform: translateZ(0)`, `will-change: filter, transform`, เอา `overflow: hidden` ของ parent ออก, เพิ่มระยะห่างจาก header (เผื่อโดน z-index สูงกว่าบัง)
+
+**ทางแก้ที่ใช้ได้จริง (confirm แล้วบน Safari)**: เลิกใช้ CSS `filter`/`transform` แบบ live กับรูปนี้ทั้งหมด — **bake การหมุน + เงาลงในตัวไฟล์ภาพเอง** ด้วย image processing (หมุน pixel จริง + composite เงานุ่มจาก alpha channel ของภาพ) ได้เป็นไฟล์แบนไฟล์เดียว ไม่มี live filter ให้ browser คำนวณอีก ไฟล์ตัวอย่าง: `public/assets/images/start/decor/id-card-decor.webp`
+
+**ข้อจำกัดสำคัญ — bake ใช้กับ SVG ไม่ได้ตรงๆ**: bake เป็นเทคนิค raster (pixel) ล้วนๆ ถ้าของตกแต่งชิ้นต่อไปได้มาเป็น **SVG** (ตามแผน §3.5 ที่อยากได้ SVG เพื่อความคมชัด+ปรับสีได้) เอามา bake ทิ้งจะเสียจุดเด่นของ SVG ไปหมด — **แผนสำหรับของตกแต่งที่เป็น SVG**: ลองใช้ `<feDropShadow>` ของ SVG เอง (shadow + rotate ทำเป็นส่วนหนึ่งของไฟล์ SVG/inline SVG ไปเลย ไม่ใช่ CSS จากภายนอก) เพราะเป็นคนละ render pipeline กับ CSS `filter`+`transform` บน `<img>` ที่เจอบั๊ก น่าจะรอด — **ยังไม่เคยเทสจริง รอไฟล์ SVG มาก่อนถึงจะลองได้** ถ้าเจอบั๊กแบบเดียวกันอีก ให้ fallback ไปทาง rasterize+bake (รู้แล้วว่าเวิคแน่ๆ) หรือตัดเงาออกไปเลยก็ได้ (ของจริงจาก design ไม่ได้มีเงาด้วยซ้ำ — เงาเป็นสิ่งที่ dev เพิ่มเอง)
+
 ---
 
 ## 4. Interaction ต่อ Question
