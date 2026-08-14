@@ -1,0 +1,37 @@
+:root {
+  --color-header-bg: #403630;
+  --color-cream: #fdf6e6;
+  --color-paper: #fdf6e6;
+  --color-rust: #b5703a;
+  --color-brand-green: #8fb35a;
+  --color-brand-pink: #e0568f;
+  --color-ink: #3d332c;
+
+  --font-display: 'Mitr', 'Sarabun', sans-serif;
+  --font-body: 'Sarabun', 'Mitr', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  background: var(--color-paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+}
+
+img {
+  max-width: 100%;
+}
