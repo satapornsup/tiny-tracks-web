@@ -1,0 +1,54 @@
+:host {
+  display: block;
+  position: relative;
+  z-index: 20;
+}
+
+.app-header {
+  --header-height: 64px;
+  /* header-tab.webp: intrinsic 1800x651, flat/short region is 436px tall at native res */
+  --tab-native-flat-h: 436;
+  --tab-native-total-h: 651;
+
+  position: relative;
+  height: var(--header-height);
+  background: var(--color-header-bg);
+
+  &__tab {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: calc(var(--header-height) * var(--tab-native-total-h) / var(--tab-native-flat-h));
+    width: auto;
+    display: block;
+    pointer-events: none;
+  }
+
+  &__menu-btn {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-cream);
+    cursor: pointer;
+    transition:
+      transform 0.15s ease,
+      opacity 0.15s ease;
+
+    &:hover {
+      opacity: 0.8;
+    }
+
+    &:active {
+      transform: translateY(-50%) scale(0.92);
+    }
+  }
+}

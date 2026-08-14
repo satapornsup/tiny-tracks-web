@@ -1,0 +1,62 @@
+.start {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  min-height: calc(100dvh - 64px);
+  padding: 40px 24px;
+  overflow: hidden;
+  background: var(--color-paper);
+
+  &__decor {
+    position: absolute;
+    pointer-events: none;
+    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.16));
+  }
+
+  &__decor--id-card {
+    --decor-top: 10px;
+    --decor-left: 80px;
+    --decor-width: min(290px, 38vw);
+    --decor-rotate: -16deg;
+
+    top: var(--decor-top);
+    left: var(--decor-left);
+    width: var(--decor-width);
+    transform: rotate(var(--decor-rotate));
+
+    @media (max-width: 640px) {
+      --decor-top: 14px;
+      --decor-left: 14px;
+      --decor-width: min(150px, 42vw);
+      --decor-rotate: -12deg;
+    }
+  }
+
+  &__logo {
+    width: min(520px, 60vw);
+  }
+
+  &__cta {
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+
+    img {
+      width: min(200px, 45vw);
+      display: block;
+    }
+
+    &:hover {
+      transform: scale(1.04);
+    }
+
+    &:active {
+      transform: scale(0.96);
+    }
+  }
+}
