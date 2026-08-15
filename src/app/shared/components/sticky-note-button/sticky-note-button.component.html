@@ -1,0 +1,13 @@
+<button class="sticky-note-btn" [class.sticky-note-btn--pink]="variant() === 'pink'" type="button"
+  (click)="pressed.emit()">
+  <svg class="sticky-note-btn__pill" viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect x="4" y="4" width="252" height="72" rx="36" fill="var(--color-cream)" stroke="var(--color-rust)"
+      stroke-width="2.8" stroke-dasharray="1 15" stroke-linecap="round" />
+  </svg>
+  @if (iconPosition()) {
+  <span class="sticky-note-btn__icon" [class.sticky-note-btn__icon--after]="iconPosition() === 'after'">
+    <ng-content></ng-content>
+  </span>
+  }
+  <span class="sticky-note-btn__label">{{ label() }}</span>
+</button>

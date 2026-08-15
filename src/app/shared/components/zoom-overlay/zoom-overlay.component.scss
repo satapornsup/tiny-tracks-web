@@ -1,0 +1,116 @@
+:host {
+  /* no box of its own — .zoom-overlay below is position:fixed and should
+     behave like a page-level portal regardless of where this component
+     sits in the template */
+  display: contents;
+}
+
+.zoom-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+
+  &--open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  &__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(20, 16, 14, 0.65);
+  }
+
+  &__header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    height: 64px;
+    padding: 0 20px;
+    background: var(--color-header-bg);
+  }
+
+  &__logo {
+    height: 30px;
+    width: auto;
+    display: block;
+  }
+
+  &__title {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 25px;
+    letter-spacing: 0.02em;
+    color: white;
+    white-space: nowrap;
+  }
+
+  &__close {
+    margin-left: auto;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+
+    img {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    &:hover {
+      transform: scale(1.1);
+    }
+
+    &:active {
+      transform: scale(0.92);
+    }
+  }
+
+  &__body {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    overflow: hidden;
+  }
+
+  /* cute pop-in — slight overshoot ("back" easing) instead of a plain
+     linear scale, timed with the overlay's own fade so open/close both
+     read as one motion instead of two */
+  &__image {
+    max-width: min(600px, 100%);
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.35));
+    transform: scale(0.85) translateY(16px);
+    opacity: 0;
+    transition:
+      transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+      opacity 0.25s ease;
+  }
+
+  &--open &__image {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}

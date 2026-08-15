@@ -1,0 +1,17 @@
+<div class="zoom-overlay" [class.zoom-overlay--open]="open()" role="dialog" aria-modal="true">
+  <div class="zoom-overlay__backdrop"></div>
+
+  <header class="zoom-overlay__header">
+    <img class="zoom-overlay__logo" src="assets/images/shared/logo-white.webp" alt="Tiny Tracks" />
+    <span class="zoom-overlay__title">{{ title() }}</span>
+    <button class="zoom-overlay__close" type="button" aria-label="ปิด" (click)="closed.emit()">
+      <img src="assets/images/home/X.svg" alt="" aria-hidden="true" />
+    </button>
+  </header>
+
+  <div class="zoom-overlay__body" (click)="closed.emit()">
+    @if (imageSrc()) {
+    <img class="zoom-overlay__image" [src]="imageSrc()" [alt]="imageAlt()" (click)="$event.stopPropagation()" />
+    }
+  </div>
+</div>
