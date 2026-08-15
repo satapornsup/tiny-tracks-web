@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Swatch_Info_Layer" data-name="Swatch Info Layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 85.52 80.92">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff9e1;
+        opacity: .77;
+        stroke: #9d4900;
+        stroke-dasharray: .95 10.28;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 1.58px;
+      }
+
+      .cls-2 {
+        fill: #403630;
+      }
+    </style>
+  </defs>
+  <rect class="cls-1" x=".79" y=".79" width="83.94" height="79.34" rx="39.67" ry="39.67"/>
+  <polygon class="cls-2" points="69.57 21.83 62.36 14.62 43.26 33.72 23.16 13.62 15.95 20.84 36.05 40.93 16.94 60.04 24.15 67.25 43.26 48.14 61.36 66.25 68.57 59.04 50.47 40.93 69.57 21.83"/>
+</svg>

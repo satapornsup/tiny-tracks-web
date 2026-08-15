@@ -1,0 +1,29 @@
+.story {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100dvh - 72px);
+  overflow: hidden;
+  background: var(--color-paper);
+
+  /* keep in sync with the header's own mobile --header-height (72→56) —
+     this uses exact height (not min-height), so a mismatch here would
+     leave either a gap or an unwanted scrollbar */
+  @media (max-width: 640px) {
+    height: calc(100dvh - 56px);
+  }
+
+  &__placeholder {
+    color: var(--color-ink);
+    opacity: 0.5;
+    font-size: 18px;
+  }
+
+  &__skip {
+    position: absolute;
+    left: 50%;
+    bottom: 32px;
+    transform: translateX(-50%);
+  }
+}

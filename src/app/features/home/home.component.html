@@ -1,0 +1,35 @@
+<app-header pageLabel="HOME" [hasIcon]="true">
+  <img src="assets/images/home/icon.svg" alt="" aria-hidden="true" />
+</app-header>
+
+<main class="home">
+  <div class="home__side home__side--left" aria-hidden="true"></div>
+  <div class="home__side home__side--right" aria-hidden="true"></div>
+
+  <div class="home__read">
+    <div class="home__desk-wrap">
+      <img class="home__desk" src="assets/images/story/desk-scene.webp" alt="สัญญาจ้างงาน Tiny Tracks Ent." />
+      <button class="home__zoom home__zoom--contract" type="button" aria-label="ซูมดูสัญญา"
+        (click)="openZoom('contract')">
+        <img src="assets/images/home/zoom.svg" alt="" aria-hidden="true" />
+      </button>
+      <button class="home__zoom home__zoom--photo" type="button" aria-label="ซูมดูรูปถ่าย"
+        (click)="openZoom('photo')">
+        <img src="assets/images/home/zoom.svg" alt="" aria-hidden="true" />
+      </button>
+    </div>
+    <p class="home__desk-text">
+      มู่ลี่ เด็กหญิงหน้าตาน่ารักอายุ 5 ขวบ มีแววเป็นซุปเปอร์สตาร์<br class="hidden sm:flex">
+      กำลังเข้าเซ็นสัญญา จากค่าย Tiny Tracks ค่ายสื่อบันเทิงที่ปั้นดาราดังมากมาย<br class="hidden sm:flex">
+      แต่เนื่องจากที่มู่ลี่ยังอายุไม่ถึง คุณต้องรับบทเป็น ผู้ปกครองของมู่ลี่ เพื่อเซ็นสัญญาต่าง ๆ แทน...
+    </p>
+  </div>
+
+  <app-sticky-note-button class="home__action home__action--left" label="เนื้อเรื่อง" variant="pink"
+    routerLink="/story" />
+  <app-sticky-note-button class="home__action home__action--right" label="อ่านสัญญา" variant="pink"
+    (pressed)="readContract()" />
+</main>
+
+<app-zoom-overlay [open]="zoomOpen()" [title]="zoomContent()?.title ?? ''" [imageSrc]="zoomContent()?.src ?? ''"
+  [imageAlt]="zoomContent()?.alt ?? ''" (closed)="closeZoom()" />
