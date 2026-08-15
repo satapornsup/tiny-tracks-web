@@ -13,25 +13,34 @@
     position: absolute;
     pointer-events: none;
     display: block;
-    /* rotation + drop-shadow are baked into the image pixels themselves
-       (see public/assets/images/start/decor/) instead of live CSS
-       transform+filter — Safari has a persistent bug where a filter's
-       shadow region is computed in un-rotated space and doesn't follow
-       an ancestor's rotation, clipping the shadow to an axis-aligned box
-       that stays screen-aligned while the content rotates inside it.
-       No live filter/transform means nothing for that bug to clip. */
   }
 
   &__decor--id-card {
-    top: -30px;
-    left: 15px;
-    width: min(380px, 36vw);
-    height: auto;
+    top: -15px;
+    left: 60px;
+    width: min(280px, 36vw);
+    transform: rotate(-16deg);
+    transition: transform 0.25s ease;
 
     @media (max-width: 640px) {
-      top: -15px;
-      left: 15px;
-      width: min(280px, 44vw);
+      top: -30px;
+      left: 30px;
+      width: min(160px, 44vw);
+      transform: rotate(-12deg);
+    }
+
+    /* "pick up off the desk" hover — straightens + lifts, no shadow (a
+       box-shadow on this image showed a white rectangular corner —
+       the card art's canvas isn't cleanly alpha-cut to the rounded
+       card shape, so the shadow's rect peeked past it). Mouse-only so
+       it doesn't get stuck "hovered" after a tap on touch devices. */
+    @media (hover: hover) and (pointer: fine) {
+      pointer-events: auto;
+      cursor: default;
+
+      &:hover {
+        transform: rotate(0deg) scale(1.08);
+      }
     }
   }
 
@@ -39,20 +48,72 @@
     width: min(520px, 60vw);
   }
 
+  &__footer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 35px;
+    background-image: url("/assets/images/start/footer.webp");
+    background-repeat: repeat-x;
+    background-position: bottom left;
+    background-size: auto 100%;
+    pointer-events: none;
+  }
+
+  /* dashed pill built live as SVG (stroke-dasharray) with the real
+     vector "START" wordmark laid on top — replaced the earlier baked
+     raster button (start-button-bg.webp) after side-by-side comparison */
   &__cta {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: min(220px, 45vw);
+    aspect-ratio: 260 / 80;
     border: none;
     background: transparent;
     padding: 0;
     cursor: pointer;
     transition: transform 0.15s ease;
 
-    img {
-      width: min(200px, 45vw);
+    &-pill {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       display: block;
+
+      rect {
+        transition:
+          fill 0.15s ease,
+          stroke-opacity 0.15s ease;
+      }
+    }
+
+    &-text {
+      position: relative;
+      width: 72%;
+      display: block;
+      pointer-events: none;
+      /* loaded via <img src>, so it's an opaque external resource — CSS
+         fill/color can't reach the SVG's own paths. brightness(0) crushes
+         it to solid black regardless of source color, invert(1) flips
+         that to white. */
+      transition: filter 0.15s ease;
     }
 
     &:hover {
-      transform: scale(1.04);
+      transform: scale(1.1);
+
+      .start__cta-pill rect {
+        fill: var(--color-brand-green);
+        stroke-opacity: 0;
+      }
+
+      .start__cta-text {
+        filter: brightness(0) invert(1);
+      }
     }
 
     &:active {

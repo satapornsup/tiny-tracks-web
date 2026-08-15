@@ -1,18 +1,18 @@
 <app-header [bare]="true" />
 
 <main class="start">
-  <img
-    class="start__decor start__decor--id-card"
-    src="assets/images/start/decor/id-card-decor.webp"
-    alt=""
-    aria-hidden="true"
-    width="1092"
-    height="859"
-  />
+  <img class="start__decor start__decor--id-card" src="assets/images/start/decor/id-card.webp" alt="" aria-hidden="true"
+    width="900" height="566" />
 
-  <img class="start__logo" src="assets/images/start/logo-badge.webp" alt="Tiny Tracks" />
+  <img class="start__logo" src="assets/images/start/logo-badge.svg" alt="Tiny Tracks" />
 
-  <button class="start__cta" type="button">
-    <img src="assets/images/start/start-button-bg.webp" alt="START" />
+  <button class="start__cta" type="button" routerLink="/story">
+    <svg class="start__cta-pill" viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="4" y="4" width="252" height="72" rx="36" fill="var(--color-cream)" stroke="var(--color-rust)"
+        stroke-width="2.8" stroke-dasharray="1 15" stroke-linecap="round" />
+    </svg>
+    <img class="start__cta-text" src="assets/images/start/start-word.svg" alt="START" />
   </button>
+
+  <div class="start__footer" aria-hidden="true"></div>
 </main>
