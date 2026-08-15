@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+@theme static {
+  --color-header-bg: #403630;
+  --color-ink: #403630;
+  --color-rust: #9d4900;
+  --color-cream: #fff9e1;
+  --color-paper: #fffdf6;
+  --color-brand-green: #83ad54;
+  --color-brand-pink: #fd76a8;
+}

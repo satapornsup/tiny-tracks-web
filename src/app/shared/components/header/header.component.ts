@@ -1,4 +1,5 @@
-import { Component, input, output } from "@angular/core";
+import { Component, inject, input } from "@angular/core";
+import { MenuDrawerService } from "../../services/menu-drawer.service";
 
 @Component({
   selector: "app-header",
@@ -8,5 +9,10 @@ import { Component, input, output } from "@angular/core";
 })
 export class HeaderComponent {
   readonly bare = input(false);
-  readonly menuToggle = output<void>();
+  /** center label — omit (leave "") on pages that don't need one */
+  readonly pageLabel = input("");
+  /** set true when projecting an icon in alongside pageLabel; some pages
+   *  only need text (e.g. "เนื้อเรื่อง"), so the icon slot isn't assumed */
+  readonly hasIcon = input(false);
+  protected readonly menuDrawer = inject(MenuDrawerService);
 }

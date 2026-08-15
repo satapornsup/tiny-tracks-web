@@ -1,0 +1,106 @@
+.menu-backdrop {
+  position: fixed;
+  /* starts below the header, not inset:0 — the header (z-index 20) sits
+     under this backdrop (z-index 25), so covering it too would let the
+     backdrop steal the hamburger button's hover/click once open, causing
+     an open→backdrop-covers-button→mouseleave→close→repeat flicker loop */
+  inset: 64px 0 0 0;
+  /* invisible — no dimming, just an outside-click catcher to close the
+     drawer on touch devices */
+  background: transparent;
+  pointer-events: none;
+  z-index: 25;
+
+  &--open {
+    pointer-events: auto;
+  }
+}
+
+.menu-drawer {
+  position: fixed;
+  top: 70px;
+  right: 0;
+  z-index: 26;
+  width: min(260px, 70vw);
+  background: transparent !important;
+  display: flex;
+  flex-direction: column;
+  // box-shadow: -4px 0 16px rgba(0, 0, 0, 0.12);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+
+  &--open {
+    transform: translateX(0);
+  }
+
+  /* each row's own background — the real vector "file tab" shape (dashed
+     rust border, cream fill, small notch bump near the top-left) stacked
+     with zero gap between rows. The shape's notch sits ~2% down from its
+     own top edge, so at a 0-gap seam it lands right at the row boundary
+     without needing manual overlap. */
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    position: relative;
+    height: 56px;
+    padding: 0 20px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--color-ink);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+
+    /* pull each row up over the previous one's bottom edge so their dashed
+       borders don't double up into a visible gap — later rows paint on
+       top (normal stacking order), so only the later row's own border
+       shows at the seam */
+    &:not(:first-child) {
+      margin-top: -20px;
+    }
+
+    &-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      fill: var(--color-cream);
+      stroke: var(--color-rust);
+      stroke-width: 2.87;
+      stroke-dasharray: 1.72 10;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vector-effect: non-scaling-stroke;
+    }
+
+    &-label {
+      position: relative;
+    }
+
+    /* scoped to real pointer devices only — on touch, :hover sticks after
+       a tap until you tap elsewhere, which reads as a stuck/broken state */
+    @media (hover: hover) and (pointer: fine) {
+      &:not(&--disabled):hover {
+        color: var(--color-rust);
+      }
+    }
+
+    &--active &-label::before {
+      content: "▶";
+      margin-right: 8px;
+      font-size: 10px;
+      vertical-align: middle;
+    }
+
+    &--disabled {
+      cursor: default;
+
+      .menu-drawer__item-label {
+        opacity: 0.4;
+      }
+    }
+  }
+}

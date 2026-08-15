@@ -1,0 +1,44 @@
+<div class="menu-backdrop" [class.menu-backdrop--open]="menuDrawer.isOpen()" (click)="menuDrawer.close()"></div>
+
+<nav class="menu-drawer" [class.menu-drawer--open]="menuDrawer.isOpen()" (mouseenter)="menuDrawer.onHoverEnter()"
+  (mouseleave)="menuDrawer.onHoverLeave()">
+  <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+    <defs>
+      <path id="menu-drawer-tab"
+        d="M412.99,17.76v58.73H20.03c-10.27,0-18.59-8.32-18.59-18.59V17.76h2.55c4.79-4.56,9.59-9.11,14.38-13.67,1.79-1.7,4.17-2.65,6.65-2.65h52.44c2.47,0,4.84.95,6.64,2.65,4.8,4.55,9.59,9.11,14.39,13.67h314.5Z" />
+    </defs>
+  </svg>
+
+  <a class="menu-drawer__item" routerLink="/home" routerLinkActive="menu-drawer__item--active"
+    (click)="menuDrawer.close()">
+    <svg class="menu-drawer__item-bg" viewBox="0 0 414.42 77.92" preserveAspectRatio="none" aria-hidden="true">
+      <use href="#menu-drawer-tab" />
+    </svg>
+    <span class="menu-drawer__item-label">HOME</span>
+  </a>
+  <a class="menu-drawer__item" routerLink="/story" routerLinkActive="menu-drawer__item--active"
+    (click)="menuDrawer.close()">
+    <svg class="menu-drawer__item-bg" viewBox="0 0 414.42 77.92" preserveAspectRatio="none" aria-hidden="true">
+      <use href="#menu-drawer-tab" />
+    </svg>
+    <span class="menu-drawer__item-label">เนื้อเรื่อง</span>
+  </a>
+  <span class="menu-drawer__item menu-drawer__item--disabled">
+    <svg class="menu-drawer__item-bg" viewBox="0 0 414.42 77.92" preserveAspectRatio="none" aria-hidden="true">
+      <use href="#menu-drawer-tab" />
+    </svg>
+    <span class="menu-drawer__item-label">ปลอดภัย</span>
+  </span>
+  <span class="menu-drawer__item menu-drawer__item--disabled">
+    <svg class="menu-drawer__item-bg" viewBox="0 0 414.42 77.92" preserveAspectRatio="none" aria-hidden="true">
+      <use href="#menu-drawer-tab" />
+    </svg>
+    <span class="menu-drawer__item-label">PHOTO BOOTH</span>
+  </span>
+  <span class="menu-drawer__item menu-drawer__item--disabled">
+    <svg class="menu-drawer__item-bg" viewBox="0 0 414.42 77.92" preserveAspectRatio="none" aria-hidden="true">
+      <use href="#menu-drawer-tab" />
+    </svg>
+    <span class="menu-drawer__item-label">CONCEPT</span>
+  </span>
+</nav>

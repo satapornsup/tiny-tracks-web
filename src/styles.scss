@@ -1,14 +1,28 @@
-:root {
-  --color-header-bg: #403630;
-  --color-cream: #fdf6e6;
-  --color-paper: #fdf6e6;
-  --color-rust: #b5703a;
-  --color-brand-green: #8fb35a;
-  --color-brand-pink: #e0568f;
-  --color-ink: #3d332c;
+@font-face {
+  font-family: "SukhumvitSet";
+  src: url("/assets/fonts/SukhumvitSet-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
 
-  --font-display: 'Mitr', 'Sarabun', sans-serif;
-  --font-body: 'Sarabun', 'Mitr', sans-serif;
+@font-face {
+  font-family: "SukhumvitSet";
+  src: url("/assets/fonts/SukhumvitSet-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* color tokens live in src/tailwind.css's @theme block now — that's the
+     single source of truth (also gives Tailwind utilities like text-rust,
+     bg-cream, etc.) and still exposes the same var(--color-*) names here */
+
+  /* single real font for all text — only SemiBold (600) and Bold (700)
+     weights were provided, no Regular, so the body default sits on 600 */
+  --font-display: "SukhumvitSet", sans-serif;
+  --font-body: "SukhumvitSet", sans-serif;
 }
 
 * {
@@ -23,6 +37,7 @@ body {
 
 body {
   font-family: var(--font-body);
+  font-weight: 600;
   color: var(--color-ink);
   background: var(--color-paper);
   -webkit-font-smoothing: antialiased;

@@ -5,23 +5,86 @@
 }
 
 .app-header {
-  --header-height: 64px;
-  /* header-tab.webp: intrinsic 1800x651, flat/short region is 436px tall at native res */
-  --tab-native-flat-h: 436;
-  --tab-native-total-h: 651;
+  --header-height: 72px;
 
   position: relative;
   height: var(--header-height);
   background: var(--color-header-bg);
 
-  &__tab {
+  @media (max-width: 640px) {
+    --header-height: 56px;
+  }
+
+  /* the logo-side "tab" hangs BELOW the base 80px bar (to ~119px) rather
+     than fitting inside it — a separate, taller element layered on top
+     of the flat bar, not a clip-path on .app-header itself (clip-path
+     can only remove paint within the element's own box, it can't extend
+     painting past it). Path traced pixel-by-pixel from the alpha
+     boundary of element/หัว.webp, with the flat/right reference (436px
+     native) anchored to our 80px base and the tall/left reference
+     (649px native) left to land wherever that scale puts it (~119px) —
+     that's the actual overhang, not a value to also cap at 80. */
+  &__tab-overhang {
     position: absolute;
     top: 0;
     left: 0;
-    height: calc(var(--header-height) * var(--tab-native-total-h) / var(--tab-native-flat-h));
+    width: 300px;
+    height: 107.2px;
+    background: var(--color-header-bg);
+    pointer-events: none;
+    clip-path: path(
+      "M 0 0 L 300 0 L 300 72 L 247.7 72.0 L 237.8 72.0 L 236.1 72.2 L 232.8 72.5 L 229.5 73.0 L 226.2 73.8 L 222.9 75.0 L 219.6 76.5 L 216.3 78.1 L 213.0 80.4 L 209.7 83.2 L 206.4 86.4 L 203.1 89.3 L 199.8 92.3 L 196.5 95.4 L 193.2 98.4 L 189.9 101.4 L 186.6 103.9 L 183.3 105.5 L 180.0 106.5 L 178.3 106.8 L 0.0 107.2 Z"
+    );
+
+    /* same shape, every coordinate scaled by 56/72 (the mobile
+       --header-height ratio) so the curve keeps its proportions instead
+       of stretching */
+    @media (max-width: 640px) {
+      width: 233.3px;
+      height: 83.4px;
+      clip-path: path(
+        "M 0.0 0.0 L 233.3 0.0 L 233.3 56.0 L 192.7 56.0 L 185.0 56.0 L 183.6 56.2 L 181.1 56.4 L 178.5 56.8 L 175.9 57.4 L 173.4 58.3 L 170.8 59.5 L 168.2 60.7 L 165.7 62.5 L 163.1 64.7 L 160.5 67.2 L 158.0 69.5 L 155.4 71.8 L 152.8 74.2 L 150.3 76.5 L 147.7 78.9 L 145.1 80.8 L 142.6 82.1 L 140.0 82.8 L 138.7 83.1 L 0.0 83.4 Z"
+      );
+    }
+  }
+
+  &__logo {
+    position: absolute;
+    /* centered against the tab-overhang's own height (107.2px), not the
+       72px base bar — the logo sits inside the taller tab shape, so
+       centering against the shorter bar left it riding high with a lot
+       of empty tab space underneath */
+    top: 53.6px;
+    left: 24px;
+    transform: translateY(-50%);
+    height: 60px;
     width: auto;
     display: block;
     pointer-events: none;
+
+    @media (max-width: 640px) {
+      top: 41.7px;
+      left: 16px;
+      height: 46.7px;
+    }
+  }
+
+  /* bare (Start page) variant — path traced pixel-by-pixel from the alpha
+     boundary of element/start หัว.webp (22 sampled points, dense through
+     the curve, sparse on the flat runs) and scaled to the 80px header
+     height, instead of a hand-picked bezier that didn't match closely
+     enough. Straight segments between closely-spaced points read as a
+     smooth curve at this density. */
+  &--bare {
+    clip-path: path(
+      "M 0 0 L 4000 0 L 4000 72 L 288.0 71.6 L 276.5 71.6 L 274.6 71.6 L 270.7 71.2 L 266.9 70.5 L 263.0 69.5 L 259.2 68.4 L 255.4 66.6 L 251.5 64.5 L 247.7 62.0 L 243.8 58.8 L 240.0 55.1 L 236.2 51.6 L 232.3 48.2 L 228.5 44.5 L 224.6 41.1 L 220.8 37.6 L 217.0 34.6 L 213.1 32.8 L 209.3 31.5 L 207.4 31.1 L 0.0 30.7 Z"
+    );
+
+    @media (max-width: 640px) {
+      clip-path: path(
+        "M 0.0 0.0 L 3111.1 0.0 L 3111.1 56.0 L 224.0 55.7 L 215.1 55.7 L 213.6 55.7 L 210.5 55.4 L 207.6 54.8 L 204.6 54.1 L 201.6 53.2 L 198.6 51.8 L 195.6 50.2 L 192.7 48.2 L 189.6 45.7 L 186.7 42.9 L 183.7 40.1 L 180.7 37.5 L 177.7 34.6 L 174.7 32.0 L 171.7 29.2 L 168.8 26.9 L 165.7 25.5 L 162.8 24.5 L 161.3 24.2 L 0.0 23.9 Z"
+      );
+    }
   }
 
   &__menu-btn {
@@ -32,8 +95,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     padding: 0;
     border: none;
     background: transparent;
@@ -43,12 +106,76 @@
       transform 0.15s ease,
       opacity 0.15s ease;
 
+    @media (max-width: 640px) {
+      right: 14px;
+      width: 34px;
+      height: 34px;
+    }
+
     &:hover {
       opacity: 0.8;
     }
 
     &:active {
       transform: translateY(-50%) scale(0.92);
+    }
+
+    /* CSS size overrides the SVG's own width/height attributes — without
+       this the icon (fixed at 40×28.5) would overflow the smaller 34px
+       mobile button box instead of shrinking with it */
+    &-icon {
+      width: 40px;
+      height: 28.5px;
+
+      @media (max-width: 640px) {
+        width: 26px;
+        height: 18.5px;
+      }
+    }
+  }
+
+  /* centered on the flat base bar, independent of the logo tab's height —
+     works in both the full and bare variants since it's not nested in
+     the "!bare()" block */
+  &__page-label {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    height: var(--header-height);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 28px;
+    color: white;
+    white-space: nowrap;
+    pointer-events: none;
+
+    @media (max-width: 640px) {
+      font-size: 15px;
+      gap: 6px;
+    }
+  }
+
+  &__page-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+
+    ::ng-deep svg,
+    ::ng-deep img {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    @media (max-width: 640px) {
+      width: 17px;
+      height: 17px;
     }
   }
 }
