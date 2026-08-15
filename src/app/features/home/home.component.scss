@@ -1,5 +1,10 @@
 .home {
   position: relative;
+  /* position:relative alone doesn't create a stacking context — without
+     this, the margin-decor's z-index:-1 escapes past .home entirely
+     (looking for the nearest ancestor that DOES establish one) instead
+     of just tucking behind its siblings here */
+  z-index: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,6 +17,160 @@
      leave either a gap or an unwanted scrollbar */
   @media (max-width: 640px) {
     height: calc(100dvh - 56px);
+  }
+
+  /* decorative margin cloud from the reference mockup — sits BEHIND the
+     wood side strips below and desk-text (see z-index note below).
+     Desktop: pinned to the full container height (never shrinks on
+     resize) — width just follows from that via aspect-ratio, using the
+     -31%/+31% self-relative transform trick so we don't need to know
+     the computed width for the offset. Mobile keeps the old width-driven
+     clamp() sizing instead — filling the full (much shorter) viewport
+     height there would blow the art up disproportionately. */
+  &__margin-decor {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: auto;
+    aspect-ratio: 701.09 / 1020.62;
+    pointer-events: none;
+    /* explicit, not just relying on DOM order — guarantees it stays
+       behind both __side and __read (incl. desk-text) regardless of any
+       stacking-context quirks from the flex container */
+    z-index: -1;
+
+    @media (max-width: 640px) {
+      --decor-w: clamp(120px, 42vw, 520px);
+
+      top: 50%;
+      height: auto;
+      width: var(--decor-w);
+      aspect-ratio: auto;
+      transform: translateY(-50%);
+    }
+  }
+
+  &__margin-decor--left {
+    left: 0;
+    transform: translateX(-40%);
+
+    @media (max-width: 640px) {
+      left: calc(var(--decor-w) * -0.31);
+      transform: translateY(-50%);
+    }
+  }
+
+  /* mirrored copy of the same art, same trick as __side--right */
+  &__margin-decor--right {
+    right: 0;
+    transform: translateX(40%) scaleX(-1);
+
+    @media (max-width: 640px) {
+      right: calc(var(--decor-w) * -0.31);
+      transform: translateY(-50%) scaleX(-1);
+    }
+  }
+
+  /* faint "handwritten note" text floating on the margin clouds — same
+     layer as __margin-decor (behind __side/__read), staggered
+     left/right per line to match the reference mockup's loose layout */
+  &__margin-text {
+    position: absolute;
+    z-index: -1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--color-brand-green);
+    opacity: 0.55;
+    white-space: nowrap;
+    pointer-events: none;
+
+    @media (max-width: 640px) {
+      font-size: 10px;
+      gap: 6px;
+    }
+
+    /* float + breathe, each line out of phase via a negative delay so
+       they don't bob in lockstep — reads as loose handwriting hovering
+       in the air rather than one rigid block */
+    span {
+      display: inline-block;
+      animation: home-margin-text-float 5s ease-in-out infinite;
+    }
+
+    span:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    span:nth-child(2) {
+      animation-delay: -1.3s;
+    }
+
+    span:nth-child(3) {
+      animation-delay: -2.6s;
+    }
+
+    span:nth-child(4) {
+      animation-delay: -3.9s;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      span {
+        animation: none;
+      }
+    }
+  }
+
+  &__margin-text--left {
+    left: 4%;
+    bottom: 12%;
+    align-items: flex-start;
+
+    span:nth-child(1) {
+      margin-left: 81px;
+    }
+
+    span:nth-child(2) {
+      margin-left: 0px;
+    }
+
+    span:nth-child(3) {
+      margin-left: 80px;
+    }
+
+    span:nth-child(4) {
+      margin-left: 82px;
+    }
+
+    @media (max-width: 640px) {
+      bottom: 25%;
+    }
+  }
+
+  &__margin-text--right {
+    right: 4%;
+    top: 5%;
+    align-items: flex-end;
+    text-align: right;
+
+    span:nth-child(2) {
+      margin-right: 75px;
+    }
+
+    span:nth-child(3) {
+      margin-right: 8px;
+    }
+
+    span:nth-child(4) {
+      margin-right: 55px;
+    }
+
+    @media (max-width: 640px) {
+      top: 20%;
+    }
   }
 
   /* same wood-grain tile as the Start page footer, reused rotated 90° so
@@ -68,7 +227,7 @@
     width: 100%;
     height: 100%;
     max-width: 1100px;
-    padding: 24px;
+    padding: 32px;
 
     /* extra bottom clearance so the pinned action buttons (__action,
        absolute + outside this padding) don't sit on top of the last
@@ -148,9 +307,33 @@
     font-size: 20px;
     line-height: 1.3;
     color: var(--color-ink);
+    padding-left: 20px;
+    padding-right: 20px;
 
     @media (max-width: 640px) {
       font-size: 12px;
+      padding-left: 5px;
+      padding-right: 5px;
+    }
+  }
+
+  /* blinking caret at the typing position — hidden once the reveal
+     finishes so it doesn't sit there blinking forever */
+  &__desk-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 0.9em;
+    margin-left: 2px;
+    background: var(--color-ink);
+    vertical-align: -0.1em;
+    animation: home-desk-cursor-blink 0.8s step-end infinite;
+
+    &--done {
+      display: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      display: none;
     }
   }
 
@@ -168,5 +351,30 @@
 
   &__action--right {
     right: 20px;
+  }
+}
+
+@keyframes home-margin-text-float {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+@keyframes home-desk-cursor-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
   }
 }

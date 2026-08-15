@@ -3,6 +3,24 @@
 </app-header>
 
 <main class="home">
+  <img class="home__margin-decor home__margin-decor--left" src="assets/images/home/decor/margin-cloud.svg" alt=""
+    aria-hidden="true" />
+  <img class="home__margin-decor home__margin-decor--right" src="assets/images/home/decor/margin-cloud.svg" alt=""
+    aria-hidden="true" />
+
+  <div class="home__margin-text home__margin-text--left" aria-hidden="true">
+    <span>.. .</span>
+    <span>สัญญาจ้าง ... .</span>
+    <span>ไม่มี..</span>
+    <span>กำหนด.เวลา..</span>
+  </div>
+  <div class="home__margin-text home__margin-text--right" aria-hidden="true">
+    <span>เขียนที่ ... ... ...</span>
+    <span>วันที่ ... เดือน..</span>
+    <span>พ.ศ... .</span>
+    <span>.. .</span>
+  </div>
+
   <div class="home__side home__side--left" aria-hidden="true"></div>
   <div class="home__side home__side--right" aria-hidden="true"></div>
 
@@ -13,22 +31,31 @@
         (click)="openZoom('contract')">
         <img src="assets/images/home/zoom.svg" alt="" aria-hidden="true" />
       </button>
-      <button class="home__zoom home__zoom--photo" type="button" aria-label="ซูมดูรูปถ่าย"
-        (click)="openZoom('photo')">
+      <button class="home__zoom home__zoom--photo" type="button" aria-label="ซูมดูรูปถ่าย" (click)="openZoom('photo')">
         <img src="assets/images/home/zoom.svg" alt="" aria-hidden="true" />
       </button>
     </div>
     <p class="home__desk-text">
-      มู่ลี่ เด็กหญิงหน้าตาน่ารักอายุ 5 ขวบ มีแววเป็นซุปเปอร์สตาร์<br class="hidden sm:flex">
-      กำลังเข้าเซ็นสัญญา จากค่าย Tiny Tracks ค่ายสื่อบันเทิงที่ปั้นดาราดังมากมาย<br class="hidden sm:flex">
-      แต่เนื่องจากที่มู่ลี่ยังอายุไม่ถึง คุณต้องรับบทเป็น ผู้ปกครองของมู่ลี่ เพื่อเซ็นสัญญาต่าง ๆ แทน...
+      {{ deskTextLines()[0] }}@if (deskCursorLine() === 0) {
+      <span class="home__desk-cursor" [class.home__desk-cursor--done]="deskTextDone()"></span>
+      }<br class="hidden sm:flex">
+      {{ deskTextLines()[1] }}@if (deskCursorLine() === 1) {
+      <span class="home__desk-cursor" [class.home__desk-cursor--done]="deskTextDone()"></span>
+      }<br class="hidden sm:flex">
+      {{ deskTextLines()[2] }}@if (deskCursorLine() === 2) {
+      <span class="home__desk-cursor" [class.home__desk-cursor--done]="deskTextDone()"></span>
+      }
     </p>
   </div>
 
   <app-sticky-note-button class="home__action home__action--left" label="เนื้อเรื่อง" variant="pink"
-    routerLink="/story" />
-  <app-sticky-note-button class="home__action home__action--right" label="อ่านสัญญา" variant="pink"
-    (pressed)="readContract()" />
+    iconPosition="before" routerLink="/story">
+    <img src="assets/images/shared/icons/play.svg" alt="" aria-hidden="true" />
+  </app-sticky-note-button>
+  <app-sticky-note-button class="home__action home__action--right" label="อ่านสัญญา" variant="green"
+    iconPosition="after" (pressed)="readContract()">
+    <img src="assets/images/shared/icons/next.svg" alt="" aria-hidden="true" />
+  </app-sticky-note-button>
 </main>
 
 <app-zoom-overlay [open]="zoomOpen()" [title]="zoomContent()?.title ?? ''" [imageSrc]="zoomContent()?.src ?? ''"
