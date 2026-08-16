@@ -18,7 +18,7 @@
 
 .menu-drawer {
   position: fixed;
-  top: 70px;
+  top: 76px;
   right: 0;
   z-index: 26;
   width: min(260px, 70vw);
@@ -28,8 +28,21 @@
   // box-shadow: -4px 0 16px rgba(0, 0, 0, 0.12);
   transform: translateX(100%);
   transition: transform 0.3s ease;
+  /* closed = fully unhoverable, not just visually off-screen — a plain
+     translateX(100%) still leaves a sub-pixel sliver right at the
+     viewport edge that a real mouse can catch, which opened the drawer
+     just by hovering near the screen edge instead of the hamburger
+     button. The button has its own independent mouseenter to open();
+     this nav's own mouseenter only needs to matter once open, to keep
+     it open while the cursor crosses from the button into the drawer. */
+  pointer-events: none;
+
+  @media (max-width: 640px) {
+    top: 63px;
+  }
 
   &--open {
+    pointer-events: auto;
     transform: translateX(0);
   }
 
@@ -42,6 +55,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    gap: 8px;
     position: relative;
     height: 56px;
     padding: 0 20px;
@@ -74,32 +88,37 @@
       stroke-linecap: round;
       stroke-linejoin: round;
       vector-effect: non-scaling-stroke;
+      transition: fill 0.15s ease;
+    }
+
+    &-icon {
+      position: relative;
+      width: 22px;
+      height: 22px;
+      margin-top: 3px;
+      flex-shrink: 0;
     }
 
     &-label {
       position: relative;
+      margin-top: 6px;
     }
 
-    /* scoped to real pointer devices only — on touch, :hover sticks after
-       a tap until you tap elsewhere, which reads as a stuck/broken state */
-    @media (hover: hover) and (pointer: fine) {
-      &:not(&--disabled):hover {
-        color: var(--color-rust);
+    /* hover and active both fill the tab green — dash stays untouched in
+       both (stroke-opacity is never set here, so it's always the base 1) */
+    &:hover,
+    &--active {
+      color: var(--color-cream);
+
+      .menu-drawer__item-bg {
+        fill: var(--color-brand-green);
       }
-    }
 
-    &--active &-label::before {
-      content: "▶";
-      margin-right: 8px;
-      font-size: 10px;
-      vertical-align: middle;
-    }
-
-    &--disabled {
-      cursor: default;
-
-      .menu-drawer__item-label {
-        opacity: 0.4;
+      /* the icon's white folder shape stays white, but the house mark
+         (currentColor, cream by default here) reads better as the same
+         green as the tab than as cream-on-white */
+      .menu-drawer__item-icon-fg {
+        fill: var(--color-brand-green);
       }
     }
   }
