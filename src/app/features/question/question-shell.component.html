@@ -1,0 +1,21 @@
+<app-header [pageLabel]="config.prompt" />
+
+<main class="question-shell">
+  @switch (config.interactionType) {
+  @case ('swipe-card') {
+  <app-question-swipe-card class="question-shell__swipe-card" [options]="config.options!" />
+  }
+  @default {
+  <p class="question-shell__prompt">{{ config.prompt }}</p>
+  }
+  }
+
+  <app-sticky-note-button class="question-shell__nav question-shell__nav--back" label="" variant="pink"
+    iconPosition="before" (pressed)="goBack()">
+    <img src="assets/images/shared/icons/back.svg" alt="" aria-hidden="true" />
+  </app-sticky-note-button>
+  <app-sticky-note-button class="question-shell__nav question-shell__nav--next" label="" variant="green"
+    iconPosition="after" [disabled]="nextDisabled()" (pressed)="onNext()">
+    <img src="assets/images/shared/icons/next.svg" alt="" aria-hidden="true" />
+  </app-sticky-note-button>
+</main>

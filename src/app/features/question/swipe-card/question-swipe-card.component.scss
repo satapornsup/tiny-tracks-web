@@ -1,0 +1,130 @@
+.swipe-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* moved inside the frame, flanking the photo area (left/right edges,
+     vertically centered on it) instead of sitting outside the phone
+     graphic entirely */
+  &__arrow {
+    position: absolute;
+    top: 44%;
+    width: 34px;
+    height: 34px;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+
+    img,
+    &-icon {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    &-icon path {
+      fill: #403630;
+      transition: fill 0.15s ease;
+    }
+
+    &:hover {
+      transform: translateY(-50%) scale(1.15);
+    }
+
+    &:active {
+      transform: translateY(-50%) scale(0.9);
+    }
+  }
+
+  &__arrow--prev {
+    left: 9%;
+    transform: translate(-50%, -50%);
+
+    &:hover {
+      transform: translate(-50%, -50%) scale(1.15);
+    }
+
+    &:active {
+      transform: translate(-50%, -50%) scale(0.9);
+    }
+
+    img {
+      transform: scaleX(-1);
+    }
+  }
+
+  &__arrow--next {
+    right: 9%;
+    transform: translate(50%, -50%);
+
+    &:hover {
+      transform: translate(50%, -50%) scale(1.15);
+    }
+
+    &:active {
+      transform: translate(50%, -50%) scale(0.9);
+    }
+  }
+
+  /* real phone-frame asset (element/โทรสัพ.webp) as the visual chrome —
+     aspect-ratio locked to its native size so every overlay positioned
+     in % below always lands on the same spot in the art */
+  &__frame {
+    position: relative;
+    width: min(600px, 92vw);
+    aspect-ratio: 3465 / 3692;
+  }
+
+  &__frame-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+  }
+
+  /* the blank "screen" area baked into the frame art — shows the option's
+     photo directly, no placeholder border/background */
+  &__photo {
+    position: absolute;
+    left: 15%;
+    right: 15%;
+    top: 21%;
+    height: 46%;
+    overflow: hidden;
+  }
+
+  &__photo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* sits over the frame art's own baked "1/1" — same spot, real count */
+  &__counter {
+    position: absolute;
+    left: 50%;
+    top: 77.5%;
+    transform: translateX(-50%);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 25px;
+    color: var(--color-ink);
+
+    @media (max-width: 640px) {
+      font-size: 12px;
+    }
+  }
+
+  &__confirm {
+    position: absolute;
+    left: 50%;
+    top: 89%;
+    transform: translate(-50%, -50%);
+  }
+}

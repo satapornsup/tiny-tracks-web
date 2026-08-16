@@ -1,0 +1,65 @@
+.question-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  height: calc(100dvh - 72px);
+  padding: 40px 24px;
+  background: var(--color-paper);
+  overflow: hidden;
+
+  @media (max-width: 640px) {
+    height: calc(100dvh - 56px);
+  }
+
+  &__prompt {
+    margin: 0;
+    max-width: 640px;
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--color-ink);
+
+    @media (max-width: 640px) {
+      font-size: 16px;
+    }
+  }
+
+  /* pulled out of the centered flex flow entirely and pinned flush to
+     the viewport's bottom edge, per request — the nav buttons (below,
+     z-index:1, later in DOM) paint on top wherever they'd overlap it.
+     On mobile there's not enough height for that to look right (the
+     frame runs off-screen), so it centers instead. */
+  &__swipe-card {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+
+    @media (max-width: 640px) {
+      bottom: auto;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  /* same StickyNoteButtonComponent + same bottom-corner position as
+     home__action on the Home page, for visual continuity between the
+     two screens */
+  &__nav {
+    position: absolute;
+    bottom: 20px;
+    z-index: 1;
+  }
+
+  &__nav--back {
+    left: 20px;
+  }
+
+  &__nav--next {
+    right: 20px;
+  }
+}

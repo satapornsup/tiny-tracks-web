@@ -23,32 +23,22 @@
 
 ---
 
-## 1. Flow ทั้งหมด (ยืนยันจาก 01.png + 02.png)
+## 1. Flow ทั้งหมด (อัปเดต 2026-08-16 — คุยกับ user ตรงๆ แล้ว ไม่ใช่แค่จาก mockup)
 
 ```
-START ──▶ STORY (คลิป → เนื้อเรื่อง ซูมเอกสาร) ──▶ HOME ──▶ Q1 ──▶ Q2 ──▶ Q3 ──▶ Q4 ──▶ Q5 ──▶ Q6
-                                                                                              │
-                                        ┌─────────────────────────────────────────────────────┤
-                                        ▼ (ถูก)                                     ▼ (ผิด)
-                                   สรุปผล 1                                    สรุปผล 2
-                                        └───────────────┬───────────────────────────┘
-                                                         ▼
-                                                ข้อควรปฏิบัติ (ร่วมกันทั้ง 2 path)
-                                                         ▼
-                                                   PHOTO BOOTH
-                                                         ▼
-                                                     CONCEPT
+START ──▶ STORY (คลิป → เนื้อเรื่อง ซูมเอกสาร) ──▶ HOME ──▶ Q1 ──▶ Q2 ──▶ Q3 ──▶ Q4 ──▶ Q5 ──▶ Q6 ──▶ สรุปผล ──▶ ข้อควรปฏิบัติ ──▶ PHOTO BOOTH ──▶ CONCEPT
 ```
 
 เมนู hamburger (มุมขวาบนของทุกหน้า ยกเว้น START) เปิด side drawer แบบ "แฟ้มเอกสาร" (folder-tab) เข้าถึงได้ทุกที่:
 `HOME · เนื้อเรื่อง (STORY) · ข้อควรปฏิบัติ · PHOTO BOOTH · CONCEPT`
 
-### แต่ละ Question มีเส้นทาง "ถูก" (เขียว) / "ผิด" (แดง) คู่ขนานกันตลอด
+### ไม่มีแตกสาย "สรุปผล 1 (ถูก) / สรุปผล 2 (ผิด)" อีกแล้ว — confirm กับ user แล้ว 2026-08-16
 
-สำคัญมาก — ต้อง confirm กับ designer/PM ก่อนเขียน logic จริง:
+mockup เดิม (02.png) ดูเหมือนมีสาย "ถูก"/"ผิด" คู่ขนานจบที่สรุปผลคนละหน้า — **ยกเลิกแนวคิดนี้แล้ว**:
 
-- สีเขียว/แดงใน 02.png **เป็น annotation สำหรับ dev เท่านั้น** (บอกว่า choice ไหนคือ "ทางถูก/ทางผิด") ไม่ใช่ UI จริงที่ผู้เล่นเห็น ใช่ไหม? (สมมติฐานปัจจุบัน: ใช่)
-- กติกาคำนวณ "สรุปผล 1 (ถูก)" vs "สรุปผล 2 (ผิด)" จากคำตอบ 6 ข้อ คือแบบไหน — ต้องตอบ "ถูก" **ทุกข้อ** ถึงจะได้สรุปผล 1 หรือมี threshold (เช่น ≥4/6)? **ยังไม่มีสเปกนี้ ต้องถามก่อนเขียน `evaluateResult()`**
+- ผู้เล่นตอบครบ **ทั้ง 6 ข้อเสมอ** ไม่มีแตกสายระหว่างทาง ไม่มีเฉลยทีละข้อระหว่างเล่น
+- หน้า `/result` เป็นหน้าเดียว (ไม่ใช่ result1/result2) แสดง **recap คำตอบทั้ง 6 ข้อ** ว่าแต่ละข้อผู้เล่นเลือกอะไร ถูกหรือผิด
+- สีเขียว/แดงใน 02.png ยังคงเป็น annotation สำหรับ dev เท่านั้น (ไม่ใช่ UI จริง) — แต่ตอนนี้แค่บอกว่า choice ไหน "นับเป็นคำตอบถูก" สำหรับ recap ไม่ได้ใช้ตัดสินแตกสายแล้ว
 
 ---
 
@@ -64,12 +54,14 @@ START ──▶ STORY (คลิป → เนื้อเรื่อง ซู
 /                     → StartComponent
 /story                → StoryComponent (clip + เนื้อเรื่อง สอง step ในตัวเดียว)
 /home                 → HomeComponent
-/question/:id         → QuestionShellComponent (data-driven, id = 1-6)
-/result               → ResultComponent (อ่านจาก QuizStateService)
+/question/:id         → QuestionShellComponent (data-driven, id = 1-6) — canActivate: [quizGuard]
+/result               → ResultComponent (อ่านจาก QuizStateService) — canActivate: [quizGuard]
 /safety               → SafetyTipsComponent (ข้อควรปฏิบัติ)
 /photo-booth          → PhotoBoothComponent
 /concept              → ConceptComponent
 ```
+
+`quizGuard` เช็ก `quizState.hasEntered()` — ถ้า false (refresh มา หรือพิมพ์ URL ตรงเข้ามาโดยไม่ผ่าน Home) เด้งไป `/` ทันที (รายละเอียดกลไก ดูข้อ 7)
 
 ### 2.2 Layout / Shared (ใช้ซ้ำทุกหน้า ยกเว้น Start)
 
@@ -89,12 +81,12 @@ START ──▶ STORY (คลิป → เนื้อเรื่อง ซู
 - **`StoryComponent`** — internal state 2 step (ไม่แยก route เพราะใช้ header/เลย์เอาต์เดียวกัน): `clip` (วิดีโอ + ปุ่ม SKIP) → `read` (ฉาก "เนื้อเรื่อง" มีเอกสาร/รูป/บัตร ให้กดแว่นขยายซูมดู 2 จุด) → ปุ่ม "อ่านสัญญา →" ไป `/home` หรือ `/question/1` (ต้อง confirm ว่า HOME คือหน้าคั่นจริงๆ หรือ Story ก็คือ Home — ดู Open Question ข้อ 8.4)
 - **`HomeComponent`** — ยังไม่มี mockup แยกชัดเจนจาก Story ใน 02.png (ดู Open Question)
 - **`QuestionShellComponent`** — 1 component กลาง ไม่สร้างแยกทีละข้อ รับ `QuestionConfig` (data-driven) แล้ว switch ไปเรนเดอร์ sub-widget ตาม `interactionType`:
-  - `QuestionSwipeCardComponent` — Q1 (การ์ดสไลด์ซ้าย/ขวาแบบโพสต์ IG + checkbox + ปุ่ม POST)
-  - `QuestionTexturePickerComponent` — Q4 (เลื่อนขึ้น/ลงเลือกผ้าคลุม แปะบนตัวละคร)
-  - `QuestionOutfitPickerComponent` — Q5 (กริดเสื้อผ้ารอบตัวละคร คลิกแล้ว equip แบบ live preview)
+  - `QuestionSwipeCardComponent` — Q1 (การ์ดสไลด์ซ้าย/ขวาแบบโพสต์ IG + ปุ่ม POST ยืนยัน) — ตัวเลือกทั้งหมด 4 รูป มี **2 รูปที่นับเป็นคำตอบถูก** เลือกข้อไหนก็ได้ในสองข้อนั้นแล้วกด POST → ถือว่าตอบถูก (confirm 2026-08-16)
+  - `QuestionTexturePickerComponent` — Q4 เลือกผ้าคลุม → ผ้าเลื่อน/ดึงเข้ามาคลุมตัวละคร (animation) → ต้องกดปุ่มยืนยันหลังเลือกก่อน ปุ่ม Next ถึงจะกดได้ (confirm 2026-08-16 — ไม่ใช่แค่ปุ่ม consent เฉยๆ ตามที่เคยเข้าใจผิดตอนคุยรอบแรก มี interaction เลือกผ้าจริงเหมือนแผนเดิม)
+  - `QuestionOutfitPickerComponent` — Q5 (กริดเสื้อผ้ารอบตัวละคร คลิกแล้ว equip แบบ live preview) — เสื้อท่อนบนใส่ได้แค่ตำแหน่งบน กางเกง/กระโปรงใส่ได้แค่ตำแหน่งล่าง, มีคู่คำตอบที่ถูก 4 คู่จากตัวเลือกทั้งหมด
   - `QuestionMultipleChoiceComponent` — Q2/Q3/Q6 (ยังไม่มี visual mockup แต่ confirm แล้วว่าเป็น "คำถาม + ช้อยให้ติก" — เลย์เอาต์ยังไม่ล็อก แต่ interaction type รู้แล้ว ดูข้อ 4 และข้อ 8)
 - **`CharacterStageComponent`** — ใช้ร่วมกันใน Q4/Q5: ตัวละครกลางจอ + ระบบ overlay ชั้นเสื้อผ้า/ผ้าคลุม (ดูข้อ 3.3 เรื่อง asset layering ที่ต้องขอ designer เพิ่ม)
-- **`ResultComponent`** — รับ path `'result1' | 'result2'` จาก `QuizStateService`, แสดง "สรุปผล 1/2" แล้ว auto-transition (ลูกศรเด้ง) ไป `/safety`
+- **`ResultComponent`** — อ่านคำตอบทั้ง 6 ข้อจาก `QuizStateService` แสดง **recap รายข้อ** (เลือกอะไร ถูก/ผิด) ไม่มีแตกสาย result1/result2 แล้ว (ดูข้อ 7) แล้ว auto-transition (ลูกศรเด้ง) ไป `/safety`
 - **`SafetyTipsComponent`** — การ์ดแฟ้มพลิกดู 7 ข้อ (`file 1.webp` ... `file 7.webp` — ปัจจุบันมีแยกแค่บางไฟล์ เช่น `file 1,7.webp` ใช้ template เดียวกัน 2 ที่, `file 2,4,5,6.webp`) + ไอคอน `ปลอดภัย.png`
 - **`PhotoBoothComponent`** / **`ConceptComponent`** — ยังไม่มี mockup เลย (ดู Open Question)
 
@@ -191,12 +183,14 @@ Mockup ใหม่ (เต็มฉาก): แถบ header เรียบด
 
 | Question | Interaction                                       | รายละเอียด                                                                                                                                                                                                                    |
 | -------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Q1       | Swipe/เลื่อนการ์ดแบบโพสต์ IG                      | ปุ่มลูกศร ◀▶ เลื่อนดู 2 ตัวเลือกภาพ, มี checkbox (เช่น "ปลอดภัย"), ปุ่ม POST ยืนยันคำตอบ                                                                                                                                      |
+| Q1       | Swipe/เลื่อนการ์ดแบบโพสต์ IG                      | ตัวเลือกทั้งหมด 4 รูป (เลื่อนดูด้วยปุ่มลูกศร ◀▶), มี 2 รูปที่นับเป็นคำตอบถูก — เลือกข้อไหนก็ได้ในสองข้อนั้นแล้วกด POST ยืนยัน ก็ถือว่าตอบถูก (confirm 2026-08-16)                                                             |
 | Q2       | คำถาม + ช้อยให้ติกเลือกคำตอบ                      | ยังไม่มี visual mockup (เลย์เอาต์/จำนวนช้อย/การ์ดหรือลิสต์) — ใช้ `QuestionMultipleChoiceComponent` แบบ data-driven (options เป็น array ใน `QuestionConfig`) ไปก่อน รอดีไซน์มา swap เลย์เอาต์ทีหลังได้โดยไม่กระทบ state/logic |
 | Q3       | คำถาม + ช้อยให้ติกเลือกคำตอบ                      | เหมือน Q2                                                                                                                                                                                                                     |
-| Q4       | เลื่อนขึ้น/ลง (▲▼) เลือกลายผ้า แปะบนตัวละคร       | single-select, ใช้ `CharacterStageComponent` overlay ผ้าคลุม                                                                                                                                                                  |
-| Q5       | คลิกไอเทมจากกริดรอบตัวละคร equip แบบ live preview | เสื้อบน+ล่างแยกกริด, แนะนำเพิ่มปุ่ม POST/ยืนยันแบบเดียวกับ Q1 เพื่อความสม่ำเสมอ                                                                                                                                               |
-| Q6       | คำถาม + ช้อยให้ติกเลือกคำตอบ                      | เหมือน Q2/Q3 — แต่เป็นข้อสุดท้ายที่ตัดสินผลลัพธ์ (ดูข้อ 8.1 เรื่องกติกาคำนวณสรุปผล ยังต้อง confirm)                                                                                                                           |
+| Q4       | เลือกผ้าคลุม → ดึงเข้ามาคลุมตัวละคร               | เลือกแล้วต้องกดปุ่มยืนยันก่อน ถึงจะกด Next ได้ (confirm 2026-08-16), ใช้ `CharacterStageComponent` overlay ผ้าคลุม                                                                                                            |
+| Q5       | คลิกไอเทมจากกริดรอบตัวละคร equip แบบ live preview | เสื้อท่อนบน/กางเกง-กระโปรงท่อนล่างแยกกริด ใส่สลับตำแหน่งไม่ได้ (เสื้อใส่บนอย่างเดียว, กางเกง/กระโปรงใส่ล่างอย่างเดียว) มีคู่คำตอบถูก 4 คู่ แนะนำเพิ่มปุ่ม POST/ยืนยันแบบเดียวกับ Q1 เพื่อความสม่ำเสมอ                        |
+| Q6       | คำถาม + ช้อยให้ติกเลือกคำตอบ                      | เหมือน Q2/Q3 — ยังไม่ได้คุยรายละเอียด (ดูข้อ 8)                                                                                                                                                                                |
+
+**ไม่มีเฉลยระหว่างเล่น** — ทุกข้อแค่บันทึกคำตอบเข้า `QuizStateService` แล้วไปข้อถัดไป ไม่มี error state/ตัวบอกถูกผิดให้เห็นจนกว่าจะถึงหน้า `/result` (confirm 2026-08-16)
 
 ### 4.1 `QuestionMultipleChoiceComponent` (Q2/Q3/Q6) — สิ่งที่ล็อกได้แล้ว vs ยังรอดีไซน์
 
@@ -255,24 +249,57 @@ Mockup ใหม่ (เต็มฉาก): แถบ header เรียบด
 
 ---
 
-## 7. State ของคำตอบ → สรุปผล 1/2
+## 7. State ของคำตอบ (อัปเดต 2026-08-16 — เปลี่ยนจากแผนเดิมทั้งชุด)
 
-`QuizStateService` (`providedIn: 'root'`, ใช้ Signals):
+### ตัดสินใจสำคัญ: **ไม่ persist state เลย** (ไม่ใช้ sessionStorage อีกต่อไป)
+
+แผนเดิมเคยบอกว่าจะ persist ลง `sessionStorage` กัน refresh กลางเกมแล้วข้อมูลหาย — **ยกเลิกแล้ว** หลังคุยกับ user ตรงๆ เหตุผล:
+
+- Persist-then-resume ต้องมี logic เยอะกว่ามาก: serialize ทุกครั้งที่ตอบ, ต้อง hydrate state **ก่อน** route activate (ไม่งั้นจะเห็นหน้าเปล่าแวบก่อนข้อมูลเก่าโผล่), และหนักสุดคือทุก sub-widget (swipe card, texture picker, outfit picker) ต้องรองรับ "ตั้งค่าเริ่มต้นจากคำตอบเก่า" เอง — งานเพิ่มทุก component ไม่ใช่แค่ระดับ service
+- จุดประสงค์เว็บคือโชว์ design/interactive ไม่ใช่แอปที่ต้องกันข้อมูลหาย — ผู้เล่นเว็บแนว interactive story/campaign microsite แบบนี้คุ้นเคยอยู่แล้วว่า refresh = เริ่มใหม่
+
+### ผลคือ: refresh ระหว่าง `/question/:id` หรือ `/result` = เด้งกลับ `/` (Start) เสมอ โดยไม่ต้องเขียน logic ดัก "นี่คือ refresh" เลย
+
+กลไก — `hasEntered` flag ใน memory ล้วนๆ:
 
 ```ts
-answers = signal<Record<QuestionId, AnswerValue>>({});
-result = computed(() => evaluateResult(answers())); // logic ต้อง confirm สเปกก่อน (ดูข้อ 8.1)
+@Injectable({ providedIn: 'root' })
+export class QuizStateService {
+  readonly hasEntered = signal(false); // true เฉพาะตอนกดเข้าจาก HOME ถูกทาง
+  private readonly answers = signal<Partial<Record<QuestionId, QuestionAnswer>>>({});
+
+  enterQuiz(): void {
+    this.hasEntered.set(true);
+  }
+
+  recordAnswer(id: QuestionId, value: AnswerValue, isCorrect: boolean): void { ... }
+  getAnswer(id: QuestionId): QuestionAnswer | undefined { ... }
+  readonly allAnswers = computed(() => this.answers());
+
+  reset(): void {
+    this.answers.set({});
+    this.hasEntered.set(false);
+  }
+}
 ```
 
-- แต่ละ `QuestionConfig` ประกาศ `correctValues` ของตัวเอง
-- Persist ลง `sessionStorage` (ไม่ใช้ `localStorage`) กัน refresh กลางเกมแล้วข้อมูลหาย แต่ก็ไม่ค้างข้ามรอบเล่นใหม่ — reset ตอนกลับไป Start
-- `resultPath: Signal<'result1' | 'result2' | null>` ให้ `ResultComponent` และหน้าถัดไปอ่านได้ (ต้อง confirm ว่า ข้อควรปฏิบัติ/PhotoBooth/Concept เนื้อหาต่างกันตาม path หรือใช้ร่วมกัน — จาก flow diagram ดูเหมือนใช้ร่วมกัน)
+เพราะ `hasEntered` อยู่ใน memory ล้วนๆ (ไม่ persist) — **refresh เต็มหน้า = แอป bootstrap ใหม่ = `hasEntered` กลับเป็น `false` เอง โดยอัตโนมัติ** ไม่ต้องมี logic พิเศษตรวจจับว่า "นี่คือการ refresh" เลย
+
+`quizGuard` (functional `CanActivateFn`) ติดไว้ที่ทุก route `/question/:id` และ `/result` — ถ้า `hasEntered()` เป็น `false` ก็ `router.parseUrl('/')` (redirect ไป Start) ครอบคลุมทั้ง refresh และการพิมพ์ URL ตรงเข้ามาดื้อๆ ด้วยกลไกเดียวกัน
+
+`HomeComponent` เรียก `quizState.enterQuiz()` ตอนกดปุ่ม "อ่านสัญญา" (เดิมเป็น stub `readContract()` เปล่าๆ — ตอนนี้คือจุดเริ่มต้นของ quiz จริง) ก่อน navigate ไป `/question/1`
+
+### Navigation ภายใน quiz
+
+- **Back จาก Q1** → ไป `/home` **และ** `quizState.reset()` (ล้างคำตอบทั้งหมด + `hasEntered` กลับ false)
+- **Back จาก Q2-Q6** → ไปข้อก่อนหน้า คำตอบเดิมยังอยู่ใน state แก้ไขใหม่ได้ (sub-widget อ่านค่าเก่าจาก `getAnswer()` มาตั้งเป็นค่าเริ่มต้นตอน mount)
+- **Next** → `recordAnswer()` บันทึกคำตอบ+ถูกผิด แล้วไปข้อถัดไป (Q6 → `/result`)
 
 ---
 
 ## 8. Open Questions — ต้องถาม designer/PM ก่อนเริ่มเขียนโค้ดจริง
 
-1. **กติกาคำนวณสรุปผล 1 vs 2** จากคำตอบ 6 ข้อ (ต้องถูกทุกข้อ? หรือมี threshold?) — บล็อกการเขียน `QuizStateService`
+1. ~~กติกาคำนวณสรุปผล 1 vs 2~~ — **ตอบแล้ว 2026-08-16**: ไม่มีแตกสายอีกต่อไป เล่นครบ 6 ข้อเสมอ หน้า `/result` แสดง recap ถูก/ผิดรายข้อ (ดูข้อ 1 และข้อ 7)
 2. สีเขียว/แดงใน mockup เป็น **annotation สำหรับ dev เท่านั้น** ใช่ไหม (ไม่ใช่ UI จริงที่ผู้เล่นเห็น)
 3. Q2, Q3, Q6 confirm แล้วว่าเป็น "คำถาม + ช้อยให้ติก" (multiple choice) — เริ่มเขียน `QuestionMultipleChoiceComponent` แบบ data-driven ได้เลย (ดูข้อ 4.1) แต่ยังต้องรอ designer เรื่อง: เลือกได้ข้อเดียวหรือหลายข้อ (single vs multi-select), เลย์เอาต์การ์ด/กริด, มีรูปประกอบช้อยไหม
 4. **STORY vs HOME** — จาก 02.png เห็นแค่ฉากเดียวก่อนเข้า Q1 (เนื้อเรื่อง+ซูมเอกสาร) ไม่เห็นหน้า HOME แยก คือ HOME ใช้ template เดียวกับ Story เปลี่ยนแค่เนื้อหา หรือเป็นคนละหน้าจริงๆ?

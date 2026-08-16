@@ -137,24 +137,43 @@
   /* centered on the flat base bar, independent of the logo tab's height —
      works in both the full and bare variants since it's not nested in
      the "!bare()" block */
+  /* equal left/right insets (both sized to the WIDER side, the logo) —
+     not "exactly the free space" (that avoided the logo but wasn't true
+     page-center, since the logo's ~178px gutter and the hamburger's
+     ~64px one aren't equal). Making both gutters match the logo's width
+     sacrifices some unused space on the hamburger side, but that's the
+     only way to get real dead-center text AND zero overlap at once. */
   &__page-label {
     position: absolute;
-    left: 50%;
+    left: 190px;
+    right: 190px;
     bottom: 0;
     height: var(--header-height);
-    transform: translateX(-50%);
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 4px;
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 28px;
+    font-size: 22px;
+    line-height: 1.2;
     color: white;
-    white-space: nowrap;
+    text-align: center;
+    white-space: normal;
     pointer-events: none;
 
+    /* flex children default to min-width:auto, which refuses to shrink
+       below the text's own unwrapped width — that silently defeated
+       the max-width above until this was added */
+    > span {
+      min-width: 0;
+      overflow-wrap: break-word;
+    }
+
     @media (max-width: 640px) {
-      font-size: 15px;
+      left: 145px;
+      right: 145px;
+      font-size: 13px;
       gap: 6px;
     }
   }

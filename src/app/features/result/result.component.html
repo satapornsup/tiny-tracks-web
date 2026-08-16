@@ -1,0 +1,26 @@
+<app-header pageLabel="สรุปผล" />
+
+<main class="result">
+  <p class="result__title">สรุปผลคำตอบทั้ง 6 ข้อ</p>
+
+  <ul class="result__list">
+    @for (id of questionIds; track id) {
+      <li class="result__row">
+        <span class="result__row-label">ข้อ {{ id }}</span>
+        @if (answerFor(id); as answer) {
+          <span class="result__row-status" [class.result__row-status--correct]="answer.isCorrect"
+            [class.result__row-status--wrong]="!answer.isCorrect">
+            {{ answer.isCorrect ? 'ถูก' : 'ผิด' }}
+          </span>
+        } @else {
+          <span class="result__row-status">ยังไม่ได้ตอบ</span>
+        }
+      </li>
+    }
+  </ul>
+
+  <app-sticky-note-button class="result__action" label="อ่านข้อควรปฏิบัติ" variant="green" iconPosition="after"
+    routerLink="/safety">
+    <img src="assets/images/shared/icons/next.svg" alt="" aria-hidden="true" />
+  </app-sticky-note-button>
+</main>

@@ -1,0 +1,27 @@
+.photo-booth {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100dvh - 72px);
+  padding: 40px 24px;
+  background: var(--color-paper);
+
+  @media (max-width: 640px) {
+    height: calc(100dvh - 56px);
+  }
+
+  &__prompt {
+    margin: 0;
+    max-width: 640px;
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--color-ink);
+
+    @media (max-width: 640px) {
+      font-size: 16px;
+    }
+  }
+}

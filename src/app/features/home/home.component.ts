@@ -1,8 +1,9 @@
-import { Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { StickyNoteButtonComponent } from '../../shared/components/sticky-note-button/sticky-note-button.component';
 import { ZoomOverlayComponent } from '../../shared/components/zoom-overlay/zoom-overlay.component';
+import { QuizStateService } from '../../shared/services/quiz-state.service';
 
 type ZoomTarget = 'contract' | 'photo';
 
@@ -42,6 +43,9 @@ const DESK_TEXT_TOTAL = DESK_TEXT_GRAPHEMES.reduce((sum, g) => sum + g.length, 0
   styleUrl: './home.component.scss',
 })
 export class HomeComponent implements OnInit, OnDestroy {
+  private readonly router = inject(Router);
+  private readonly quizState = inject(QuizStateService);
+
   private readonly zoomTarget = signal<ZoomTarget | null>(null);
   readonly zoomOpen = signal(false);
 
@@ -106,6 +110,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   readContract(): void {
-    // next destination (question flow) isn't built yet
+    this.quizState.enterQuiz();
+    this.router.navigate(['/question/1']);
   }
 }
