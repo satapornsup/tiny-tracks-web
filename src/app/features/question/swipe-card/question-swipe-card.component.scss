@@ -74,8 +74,30 @@
      in % below always lands on the same spot in the art */
   &__frame {
     position: relative;
-    width: min(600px, 92vw);
+    height: 80dvh;
+    width: auto;
     aspect-ratio: 3465 / 3692;
+    /* safety cap so a narrow/tall mobile viewport (lots of dvh, little
+       vw) can't blow the height-driven width past the screen edge —
+       aspect-ratio keeps the two locked, so hitting this also shrinks
+       the effective height back down with it */
+    max-width: 92vw;
+
+    /* mobile flips the driving axis: width fills the screen exactly and
+       height just follows from aspect-ratio, instead of being pinned to
+       80dvh — on a short/wide mobile viewport, an 80dvh height could
+       otherwise force a much narrower width than the screen allows.
+       100vw (not 100%) deliberately — this element's actual ancestor
+       chain up to &__swipe-card is all shrink-to-fit/auto-width
+       (centered via left:50%+translateX(-50%), not a definite box), so a
+       %-based width here would have no definite width to resolve against
+       and collapse the same way the outfit-picker panel's height did
+       earlier (see that component's own comment) */
+    @media (max-width: 640px) {
+      height: auto;
+      width: 100vw;
+      max-width: none;
+    }
   }
 
   &__frame-bg {
@@ -88,13 +110,18 @@
   }
 
   /* the blank "screen" area baked into the frame art — shows the option's
-     photo directly, no placeholder border/background */
+     photo directly, no placeholder border/background. Pixel-measured off
+     phone-frame.webp's actual transparent cutout (scanned its alpha
+     channel for the hole's bbox) rather than eyeballed — the old
+     15%/15%/21%/46% box was a bit wider and shorter than the real hole,
+     so the photo spilled over the bezel edges left/right instead of
+     staying tucked behind/within it. */
   &__photo {
     position: absolute;
-    left: 15%;
-    right: 15%;
-    top: 21%;
-    height: 46%;
+    left: 17.1%;
+    right: 17.3%;
+    top: 19.6%;
+    height: 50%;
     overflow: hidden;
   }
 
