@@ -52,7 +52,9 @@
   &__nav {
     position: absolute;
     bottom: 20px;
-    z-index: 1;
+    /* above the outfit-picker's fixed full-height side panels (z-index:2)
+       which would otherwise cover these corner buttons entirely */
+    z-index: 3;
   }
 
   &__nav--back {

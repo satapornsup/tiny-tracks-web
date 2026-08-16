@@ -1,0 +1,51 @@
+<div class="outfit-picker">
+  <img class="outfit-picker__margin-decor outfit-picker__margin-decor--left"
+    src="assets/images/home/decor/margin-cloud.svg" alt="" aria-hidden="true" />
+  <img class="outfit-picker__margin-decor outfit-picker__margin-decor--right"
+    src="assets/images/home/decor/margin-cloud.svg" alt="" aria-hidden="true" />
+
+  <div class="outfit-picker__column outfit-picker__column--left">
+    <div class="outfit-picker__panel-wrap">
+      <img class="outfit-picker__panel" src="assets/images/question/q5/panel-left.webp" alt="" aria-hidden="true" />
+      <div class="outfit-picker__items">
+        @for (item of leftItems(); track item.id) {
+        <button class="outfit-picker__item"
+          [class.outfit-picker__item--selected]="item.id === selectedTopId() || item.id === selectedBottomId()"
+          type="button" (click)="select(item)">
+          <img [src]="item.image" alt="" />
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="outfit-picker__stage">
+    <img class="outfit-picker__character" src="assets/images/question/q5/character-frame.webp" alt=""
+      aria-hidden="true" />
+    @if (selectedBottom(); as bottom) {
+    <img #bottomImg [class]="'outfit-picker__equipped outfit-picker__equipped--' + bottom.id" [src]="bottom.image"
+      alt="" />
+    }
+    @if (selectedTop(); as top) {
+    <img #topImg [class]="'outfit-picker__equipped outfit-picker__equipped--' + top.id" [src]="top.image" alt="" />
+    }
+  </div>
+
+  <app-confirm-checkbox class="outfit-picker__confirm" [checked]="confirmed()"
+    (checkedChange)="confirmed.set($event)" />
+
+  <div class="outfit-picker__column outfit-picker__column--right">
+    <div class="outfit-picker__panel-wrap">
+      <img class="outfit-picker__panel" src="assets/images/question/q5/panel-right.webp" alt="" aria-hidden="true" />
+      <div class="outfit-picker__items">
+        @for (item of rightItems(); track item.id) {
+        <button class="outfit-picker__item"
+          [class.outfit-picker__item--selected]="item.id === selectedTopId() || item.id === selectedBottomId()"
+          type="button" (click)="select(item)">
+          <img [src]="item.image" alt="" />
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+</div>

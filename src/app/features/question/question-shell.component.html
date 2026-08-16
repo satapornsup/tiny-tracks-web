@@ -1,9 +1,12 @@
-<app-header [pageLabel]="config.prompt" />
+<app-header [pageLabel]="questionId + '.' + config.prompt" />
 
 <main class="question-shell">
   @switch (config.interactionType) {
   @case ('swipe-card') {
   <app-question-swipe-card class="question-shell__swipe-card" [options]="config.options!" />
+  }
+  @case ('outfit-picker') {
+  <app-question-outfit-picker class="question-shell__outfit-picker" [items]="config.items!" />
   }
   @default {
   <p class="question-shell__prompt">{{ config.prompt }}</p>

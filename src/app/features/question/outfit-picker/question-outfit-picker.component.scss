@@ -1,0 +1,337 @@
+.outfit-picker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+
+  /* shared with &__panel's height and &__stage's max-width below, so the
+     two stay in sync as a single source of truth instead of two formulas
+     that could silently drift apart at some screen size */
+  --header-h: 72px;
+  --panel-h: min(calc(100dvh - var(--header-h)), 1000px, 54vw);
+  --panel-w: calc(var(--panel-h) * 1892 / 4071);
+  --stage-gap: 32px;
+
+  @media (max-width: 640px) {
+    --header-h: 56px;
+    --stage-gap: 14px;
+  }
+
+  /* same decorative margin cloud as .home__margin-decor, reused here so
+     Q5 has the same paper-desk backdrop behind the wardrobe scene —
+     fixed (not absolute) so it's pinned to the true viewport edge same
+     as &__column below, matching that column's own top/bottom extent via
+     the shared --header-h var. Unlike Home (which has open margins either
+     side), Q5's wardrobe panels run edge-to-edge, so — no outward
+     translateX bleed here, or the whole cloud lands under the opaque
+     panel and never shows: left flush at 0 so its RIGHT portion (cloud
+     is wider than the panel at the same height: 701/1020 vs 1892/4071)
+     spills out past the panel's inner edge into the cream gap/character
+     area, which is where it's actually visible. z-index sits below
+     &__column (2) so the wood panel still covers the part underneath it;
+     &__stage is bumped to z-index:2 too so the character stays above
+     this despite being a plain in-flow z-index:auto box otherwise. */
+  &__margin-decor {
+    position: fixed;
+    /* vertical center of the header-to-bottom region, same region
+       &__column spans — since height now tracks --panel-h (which shrinks
+       below that full region on tall/capped screens, see below) instead
+       of always filling it, this keeps the decor centered alongside the
+       panel's own centering (&__column's justify-content:center) instead
+       of sitting stuck to the top once it's shorter than the column */
+    top: calc(var(--header-h) + (100dvh - var(--header-h)) / 2);
+    /* tracks the wardrobe panel's own height formula exactly (capped at
+       1000px/54vw) instead of always filling the viewport — so the cloud
+       shrinks together with the wardrobe instead of staying huge behind
+       a much-shorter capped panel on a tall screen */
+    height: var(--panel-h);
+    width: auto;
+    aspect-ratio: 701.09 / 1020.62;
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  &__margin-decor--left {
+    left: 0;
+    transform: translateY(-50%);
+  }
+
+  &__margin-decor--right {
+    right: 0;
+    transform: translateY(-50%) scaleX(-1);
+  }
+
+  /* real wardrobe-panel art (ตู้เสื้อผ้า-42/43.webp), pinned flush to the
+     actual screen edge and spanning the full header-to-bottom height —
+     not part of the centered flex row (that only left room for a
+     padded/inset column), so this is position:fixed against the
+     viewport instead, matching the header's own breakpoint heights
+     since --header-height isn't visible outside .app-header's scope.
+     Width is NOT fixed — the panel <img> inside is normal flow (not an
+     absolutely-positioned background), so the column shrinks/grows to
+     match whatever width the image's own aspect ratio produces at the
+     given height. flex+justify-content:center vertically centers the
+     panel (and the __items overlay, sized to match it exactly) within
+     the full column height, instead of both sitting stuck to the top
+     with dead space below on a screen taller than the panel's cap. */
+  &__column {
+    position: fixed;
+    top: 72px;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    &--right {
+      left: auto;
+      right: 0;
+    }
+
+    @media (max-width: 640px) {
+      top: 56px;
+    }
+  }
+
+  /* shrink-wraps its only child (&__panel) — a flex item of &__column
+     with no explicit width/height, so it takes on exactly the img's
+     rendered box. position:relative makes IT (not &__column) the
+     containing block for &__items below, so the item grid's top/bottom/
+     left/right % always resolve against the panel's own actual
+     rendered size, not an independent guess that could drift out of
+     sync at some other screen size. */
+  &__panel-wrap {
+    position: relative;
+    display: block;
+    line-height: 0;
+  }
+
+  /* height fills the column (capped at 1000px so it doesn't get huge on
+     tall desktop screens, and at 54vw so a narrow/tall mobile viewport
+     can't blow the resulting width past ~25vw and overlap the character
+     stage or the other side's panel), width auto-follows at the image's
+     real aspect ratio. Expressed against the viewport (100dvh minus the
+     header) rather than "100%" of the column — &__panel-wrap is
+     auto-height (shrink-to-fit its only child, this img), so a
+     percentage here has no definite ancestor to resolve against and
+     silently collapses to the image's full natural 4071px size instead
+     (which cascaded into &__panel-wrap, &__column, and &__items all
+     rendering wrong). dvh sidesteps that entirely. */
+  &__panel {
+    display: block;
+    height: var(--panel-h);
+    width: auto;
+    /* Tailwind's preflight sets `img { max-width: 100% }` globally, which
+       would otherwise cap width to the column's own (still-resolving)
+       width and squeeze the image instead of letting it size from its
+       own intrinsic ratio */
+    max-width: none;
+    pointer-events: none;
+  }
+
+  /* the 4 clickable items float on top of the panel, inset to land
+     inside the artwork's own lighter "door" rectangle (not the darker
+     wood frame around it) — measured directly off panel-left.webp's
+     pixels: cream area starts ~7.5%/ends ~84% across (asymmetric since
+     this side is flush against the real screen edge, thicker cabinet
+     depth shows on the inner/right side) and ~8%/~83% down. Percentages
+     on an absolutely-positioned element resolve against &__panel-wrap's
+     own box (=the panel's exact rendered size, see above), so this
+     stays correctly aligned at any screen size instead of drifting. */
+  &__items {
+    position: absolute;
+    top: 13%;
+    bottom: 17.2%;
+    left: 7.5%;
+    right: 16.1%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4%;
+  }
+
+  /* panel-right.webp is a genuinely mirrored asset (verified against its
+     actual pixels, not a CSS flip) — thick wood border now on the left
+     (inner, facing the character) and thin on the right (outer, flush
+     with the true screen edge), the opposite of panel-left — so the
+     inset has to mirror too */
+  &__column--right &__items {
+    left: 16.1%;
+    right: 7.5%;
+  }
+
+  /* flex:1 gives each of the 4 items an equal vertical share of &__items
+     automatically (no fixed px height) — min-height:0 lets that share
+     shrink below the item's own content size, which flex items refuse
+     to do by default. aspect-ratio:1 then derives WIDTH from whatever
+     height the flex algorithm lands on, so it stays square and scales
+     with the slot instead of a fixed width/px cap that ignored how much
+     room was actually available. */
+  &__item {
+    position: relative;
+    display: block;
+    flex: 1 1 0;
+    min-height: 0;
+    height: auto;
+    width: auto;
+    max-width: 100%;
+    aspect-ratio: 1;
+    padding: 4px;
+    border: 2.5px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    cursor: pointer;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease,
+      transform 0.15s ease;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25));
+    }
+
+    &:hover {
+      transform: scale(1.5);
+    }
+
+    &--selected {
+      border-color: var(--color-brand-green);
+      background: color-mix(in srgb, var(--color-cream) 55%, transparent);
+    }
+  }
+
+  /* aspect-ratio locked to the character-frame art's native size so the
+     equipped-garment overlays (positioned in %) always land in the same
+     spot regardless of viewport. width-driven (not height) — a height-%
+     size was tried first but on a narrow/tall mobile viewport (lots of
+     dvh, little vw) it blew past the screen width sideways; a vw-capped
+     width can never do that since it's bounded by the viewport itself */
+  /* the 100vw-minus-panels term is the important one — it guarantees
+     --stage-gap of breathing room between the character frame and each
+     wardrobe cabinet at any viewport size (the 68vw/620px are just an
+     upper size cap for when there's plenty of room); without it, a wide
+     screen with a tall/narrow-vw-capped panel could let the frame's fixed
+     vw-width butt right up against the cabinets */
+  &__stage {
+    position: relative;
+    z-index: 2;
+    width: min(68vw, 620px, calc(100vw - 2 * (var(--panel-w) + var(--stage-gap))));
+    aspect-ratio: 3279 / 2968;
+    flex-shrink: 0;
+
+    @media (max-width: 640px) {
+      width: min(72vw, 360px, calc(100vw - 2 * (var(--panel-w) + var(--stage-gap))));
+    }
+  }
+
+  &__character {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  /* garment thumbnails are the same "paper doll piece" art used in the
+     side grid (no on-character crop exists — each SVG canvas still has
+     its hanger tabs baked in) — so a plain object-fit:contain box sized
+     to the character's shoulders/hips would render the tabs' extra width
+     too, leaving the actual garment looking too small. Instead each
+     modifier below is pixel-measured per file: for every garment, sampled
+     its own PNG's alpha channel row-by-row to find where the hanger tabs
+     make a row jump to near-full canvas width, and unioned only the
+     *other* rows to get the tab-free "garment-only" bbox as a fraction of
+     its own canvas (left/top/width%). Separately, sampled
+     character-frame.webp itself for the solid-white bandeau band
+     (torso target, y 1397–1574px of 2968) and underwear band (hip
+     target, y 1869–2042px), both ~50% horizontally centered. Each
+     modifier's left/top/width % is solved so that, after this element is
+     object-fit:contain'd (aspect-ratio locked to the garment's own
+     canvas so there's zero letterboxing), the garment-only sub-region
+     lands exactly on that target band — width% scaled up by ~15-20% over
+     the raw band width for a slightly looser/draped fit. Re-derive these
+     numbers (see git history for the exact measurement script) if the
+     character pose or any garment art changes. */
+  &__equipped {
+    position: absolute;
+    object-fit: contain;
+    pointer-events: none;
+
+    &--top-fur-wrap {
+      left: 30.5%;
+      top: 40%;
+      width: 41%;
+      aspect-ratio: 234 / 88.56;
+    }
+
+    &--top-blouse-gray {
+      left: 34%;
+      top: 38.5%;
+      width: 35.3%;
+      aspect-ratio: 186 / 125.76;
+    }
+
+    &--top-striped-bow {
+      left: 33.9%;
+      top: 37.5%;
+      width: 35.3%;
+      aspect-ratio: 222.96 / 151.2;
+    }
+
+    &--top-bikini-pink {
+      left: 35%;
+      top: 40%;
+      width: 32%;
+      aspect-ratio: 179.52 / 83.76;
+    }
+
+    &--bottom-striped-pants {
+      left: 33.4%;
+      top: 61.5%;
+      width: 35.5%;
+      aspect-ratio: 222.48 / 123.6;
+    }
+
+    &--bottom-skirt-pink {
+      left: 32.5%;
+      top: 61%;
+      width: 38%;
+      aspect-ratio: 222.72 / 99.12;
+    }
+
+    &--bottom-fur-shorts {
+      left: 33.5%;
+      top: 62%;
+      width: 35%;
+      aspect-ratio: 226.8 / 86.88;
+    }
+
+    &--bottom-shorts-gray {
+      left: 32.5%;
+      top: 62%;
+      width: 36.5%;
+      aspect-ratio: 226.8 / 62.64;
+    }
+  }
+
+  /* same row as the shell's back/next nav buttons (question-shell.scss
+     positions those at bottom:20px too) instead of floating inside the
+     character stage */
+  &__confirm {
+    position: fixed;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    z-index: 3;
+  }
+}
