@@ -1,3 +1,21 @@
+/* wraps BOTH <app-header> and <main class="start"> (siblings, same host)
+   — overflow:hidden lives here, not on .start itself, so the clip
+   boundary is the FULL page (header height + .start's height, which
+   together already total exactly one viewport height via normal block
+   flow) rather than just .start's own box. id-card/paperclip-top's
+   small negative top offsets are meant to tuck up UNDER the header
+   (masked by the header's own opaque curved shape, not by a hard clip
+   line) — clipping at .start's top edge instead of the host's cut them
+   off with a flat rectangular edge there, losing that "tucked behind
+   the header" look. Bleed past the BOTTOM/RIGHT edges (note/shirt/
+   paperclip-bottom, see below) still gets clipped correctly since the
+   host's bottom/right edges coincide with .start's there — only the top
+   seam (shared with the header) needed to move. */
+:host {
+  display: block;
+  overflow: hidden;
+}
+
 .start {
   position: relative;
   display: flex;
@@ -5,47 +23,214 @@
   align-items: center;
   justify-content: center;
   gap: 40px;
-  min-height: calc(100dvh - 64px);
+  /* 72px/56px matches app-header's own --header-height split exactly
+     (see header.component.scss) — the bare variant used on this page is
+     the SAME box height as the full header, just visually clipped into
+     a curved shape via clip-path, not an actually-shorter element. This
+     was hardcoded to a flat 64px with no mobile override before, which
+     didn't match either breakpoint: 8px too MUCH was reserved on
+     desktop (72px real header vs 64px assumed), pushing total page
+     height 8px past the viewport and forcing a scrollbar; 8px too
+     LITTLE was reserved on mobile (56px real header vs 64px assumed),
+     leaving .start 8px short of the true bottom edge — every other page
+     (home, story, question-shell, etc.) already uses this same
+     72px/56px split for exactly this reason. */
+  min-height: calc(100dvh - 72px);
   padding: 40px 24px;
   background: var(--color-paper);
 
+  @media (max-width: 640px) {
+    min-height: calc(100dvh - 56px);
+  }
+
+  /* shared "desk clutter" behavior for every scattered decoration below
+     (card, paperclips, pencil, cup, eraser, note, shirt) — each modifier
+     only sets its own position/size and a `--rot` custom property for its
+     resting tilt (instead of writing `transform: rotate(Ndeg)` directly).
+     The base transform and the hover transform are both defined ONCE
+     here, driven off that variable: resting = rotate(var(--rot)), hover
+     = rotate(calc(var(--rot) + 10deg)) — a small FIXED delta off each
+     item's OWN resting angle. Earlier this hover rule targeted a literal
+     `rotate(0deg)` for every item regardless of its resting tilt, which
+     was fine for small tilts (-16deg, -8deg) but meant items that needed
+     a large `--rot` just to orient the art correctly (paperclips at 90deg,
+     eraser at 140deg) spun almost all the way around on hover, while
+     shirt (0deg already) barely moved at all — a constant delta instead
+     of a constant target gives every item the same-size subtle wobble no
+     matter what its resting angle is. No shadow (a box-shadow on the
+     id-card art showed a white rectangular corner — none of this art is
+     cleanly alpha-cut to its visual silhouette). Mouse-only so nothing
+     gets stuck "hovered" after a tap on touch devices. */
   &__decor {
     position: absolute;
     pointer-events: none;
     display: block;
-  }
-
-  &__decor--id-card {
-    top: -15px;
-    left: 60px;
-    width: min(280px, 36vw);
-    transform: rotate(-16deg);
+    transform: rotate(var(--rot, 0deg));
     transition: transform 0.25s ease;
 
-    @media (max-width: 640px) {
-      top: -30px;
-      left: 30px;
-      width: min(160px, 44vw);
-      transform: rotate(-12deg);
-    }
-
-    /* "pick up off the desk" hover — straightens + lifts, no shadow (a
-       box-shadow on this image showed a white rectangular corner —
-       the card art's canvas isn't cleanly alpha-cut to the rounded
-       card shape, so the shadow's rect peeked past it). Mouse-only so
-       it doesn't get stuck "hovered" after a tap on touch devices. */
     @media (hover: hover) and (pointer: fine) {
       pointer-events: auto;
       cursor: default;
 
       &:hover {
-        transform: rotate(0deg) scale(1.08);
+        transform: rotate(calc(var(--rot, 0deg) + 10deg)) scale(1.08);
       }
     }
   }
 
+  /* clamp(mobile-floor, Kvw, desktop-max) instead of the old two-tier
+     min(px,vw) + separate mobile-breakpoint width — that combo had two
+     problems: the vw number was tuned for a much smaller px max, so at
+     typical desktop/laptop widths the vw side never won and the art sat
+     stuck at its flat max px, only starting to shrink once the window
+     got quite narrow; and then it JUMPED straight to the separate mobile
+     px value the instant the 640px breakpoint hit, instead of easing
+     into it. clamp() with K = max ÷ 1920 × 100 ("the size this should be
+     at a 1920px-wide reference viewport") scales continuously across
+     every width in between, with the two ends only acting as
+     floor/ceiling — 1920 (not 1280) because these were tuned by eye on a
+     large monitor, so the ceiling needs to sit out at that width for it
+     to still visibly shrink across ordinary laptop-sized windows instead
+     of already being maxed out by ~1280px. Only position/rotation still
+     differ per breakpoint below (the mobile LAYOUT genuinely rearranges
+     itself, not just resizes). */
+  &__decor--id-card {
+    top: -3%;
+    left: 3%;
+    width: clamp(160px, 23.4vw, 450px);
+    --rot: -16deg;
+
+    @media (max-width: 640px) {
+      top: -30px;
+      left: 30px;
+      --rot: -12deg;
+    }
+  }
+
+  /* the same paperclip art reused 3x at different positions/sizes/tilts
+     (per the reference mockup) instead of asking for 3 separate exports */
+  &__decor--paperclip-top {
+    top: -9%;
+    left: 44%;
+    width: clamp(50px, 10.4vw, 200px);
+    --rot: 90deg;
+
+    @media (max-width: 640px) {
+      top: 1%;
+      left: 38%;
+    }
+  }
+
+  /* hidden below 640px anyway (no mobile layout spot for it), so no
+     clamp floor needed — just the same recalculated K as the other two
+     paperclip instances (same source art, same 200px desktop max) */
+  &__decor--paperclip-left {
+    top: 59%;
+    left: -2%;
+    width: min(200px, 10.4vw);
+    --rot: 2deg;
+
+    @media (max-width: 640px) {
+      display: none;
+    }
+  }
+
+  /* bottom:px (not top:%), same reasoning as &__decor--note/--shirt below
+     — a top:78% position pushed this past .start's own bottom edge (and
+     into real page-level scroll) on shorter/wider windows than this was
+     first tuned against */
+  &__decor--paperclip-bottom {
+    bottom: -2%;
+    left: 57%;
+    width: min(200px, 10.4vw);
+    --rot: 80deg;
+
+    @media (max-width: 640px) {
+      display: none;
+    }
+  }
+
+  &__decor--pencil {
+    top: 5%;
+    left: 79%;
+    width: clamp(90px, 15.6vw, 300px);
+    --rot: -4deg;
+
+    @media (max-width: 640px) {
+      top: 4%;
+      left: 68%;
+    }
+  }
+
+  &__decor--coffee-cup {
+    top: 42%;
+    left: 23.5%;
+    width: clamp(64px, 9.4vw, 180px);
+    --rot: -15deg;
+
+    @media (max-width: 640px) {
+      top: 42%;
+      left: 10%;
+    }
+  }
+
+  &__decor--eraser {
+    top: 35%;
+    left: 67%;
+    width: clamp(52px, 7.8vw, 150px);
+    --rot: 140deg;
+
+    @media (max-width: 640px) {
+      top: 30%;
+      left: 72%;
+    }
+  }
+
+  /* bottom-anchored in a fixed PX (not %) at every breakpoint — note/shirt
+     are the two lowest items, sitting just above &__footer (which is a
+     fixed 35px tall, also bottom:0 within .start). A %-based bottom is a
+     fraction of .start's own height, which varies a lot more across real
+     viewports than this was tuned against, so the gap above the footer
+     either drifted wide open on tall screens or (going too far the other
+     way) went negative and slid the art behind/under the footer — a
+     fixed px offset keeps that gap the same small constant no matter how
+     tall .start ends up being, the same way &__decor--id-card is
+     positioned with fixed px instead of %. */
+  &__decor--note {
+    bottom: -16%;
+    left: 21%;
+    width: clamp(130px, 15.6vw, 300px);
+    --rot: -10deg;
+    z-index: 10;
+
+    @media (max-width: 640px) {
+      bottom: 40px;
+      left: 4%;
+    }
+  }
+
+  /* right:% (not left:%) on desktop — left:83% + this item's own width
+     is a FIXED px amount added onto a percentage offset, so on any window
+     wider than about ~1300px (this item's width caps out at 300px well
+     before the viewport does) the two together push its right edge past
+     the actual right edge of the screen, causing horizontal overflow.
+     Anchoring from the right side instead keeps a small constant margin
+     from that edge no matter how wide the window gets. */
+  &__decor--shirt {
+    bottom: 10%;
+    right: -4%;
+    width: clamp(150px, 18.2vw, 350px);
+    --rot: 0deg;
+
+    @media (max-width: 640px) {
+      bottom: 40px;
+      left: 58%;
+    }
+  }
+
   &__logo {
-    width: min(520px, 60vw);
+    width: clamp(220px, 41.7vw, 800px);
+    z-index: 10;
   }
 
   &__footer {
@@ -69,7 +254,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: min(220px, 45vw);
+    width: clamp(170px, 14.1vw, 270px);
     aspect-ratio: 260 / 80;
     border: none;
     background: transparent;
