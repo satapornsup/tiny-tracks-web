@@ -1,6 +1,9 @@
-<app-header pageLabel="เนื้อเรื่อง" />
+<app-header />
 
 <main class="story">
-  <p class="story__placeholder">หน้าคลิป (ยังไม่ใส่วิดีโอ)</p>
-  <app-sticky-note-button class="story__skip" label="SKIP" (pressed)="skipClip()" />
+  <video #clip class="story__clip" src="assets/images/story/story.mp4" autoplay loop playsinline></video>
+  <button class="story__skip" type="button" (click)="skipClip()">
+    <span class="story__skip-word" aria-hidden="true"></span>
+    <span class="story__skip-sr">SKIP</span>
+  </button>
 </main>

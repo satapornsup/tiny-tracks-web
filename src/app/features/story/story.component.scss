@@ -14,16 +14,68 @@
     height: calc(100dvh - 56px);
   }
 
-  &__placeholder {
-    color: var(--color-ink);
-    opacity: 0.5;
-    font-size: 18px;
+  /* full-bleed clip, no frame — sized to fill the entire .story box
+     (100% of both axes) with object-fit:contain scaling the VIDEO's own
+     real intrinsic ratio to fit inside that as large as possible without
+     cropping or stretching (letterboxed on whichever axis doesn't match,
+     same idea as the old fixed 16:9 aspect-ratio guess, but driven by the
+     actual file instead of an assumption). */
+  &__clip {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 
+  /* bare wordmark, no pill/border — a plain button so it stays keyboard-
+     focusable/clickable, but with all default button chrome stripped */
   &__skip {
     position: absolute;
     left: 50%;
     bottom: 32px;
     transform: translateX(-50%);
+    display: block;
+    border: none;
+    background: transparent;
+    padding: 8px;
+    cursor: pointer;
+  }
+
+  /* skip-word.svg loaded via CSS mask (not <img src>) instead of the
+     filter-based brightness(0)/invert(1) trick used for start-word.svg —
+     that trick can only ever land on black or white, and this needs to
+     land on the exact brand green on hover, an arbitrary color a filter
+     chain can't reliably hit. Masking the SVG and painting it with
+     background-color instead means the color is just a normal CSS value,
+     transitionable like any other. */
+  &__skip-word {
+    display: block;
+    width: 130px;
+    aspect-ratio: 145.44 / 44.89;
+    background-color: var(--color-ink);
+    mask-image: url("/assets/images/story/skip-word.svg");
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    mask-position: center;
+    transition: background-color 0.15s ease;
+
+    .story__skip:hover & {
+      background-color: var(--color-brand-green);
+    }
+  }
+
+  /* visually hidden but still announced/focusable — the visible word is
+     a decorative masked <span>, not real text, so this is the actual
+     accessible name for the button */
+  &__skip-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 }
