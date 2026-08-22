@@ -1,4 +1,14 @@
-import { Component, computed, DestroyRef, ElementRef, inject, input, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  ElementRef,
+  inject,
+  input,
+  OnInit,
+  signal,
+  viewChild,
+} from '@angular/core';
 import gsap from 'gsap';
 import { ConfirmCheckboxComponent } from '../../../shared/components/confirm-checkbox/confirm-checkbox.component';
 import { SwipeCardOption } from '../question.types';
@@ -10,8 +20,13 @@ import { SwipeCardOption } from '../question.types';
   templateUrl: './question-swipe-card.component.html',
   styleUrl: './question-swipe-card.component.scss',
 })
-export class QuestionSwipeCardComponent {
+export class QuestionSwipeCardComponent implements OnInit {
   readonly options = input.required<readonly SwipeCardOption[]>();
+  /** the id of whatever was recorded last time this question was
+   *  answered, if the player is navigating BACK to it (Back from Q2-Q6
+   *  keeps state per CLAUDE.md §7 — only Back from Q1 itself resets).
+   *  null on a genuinely first visit. */
+  readonly initialAnswerId = input<string | null>(null);
 
   readonly index = signal(0);
   readonly confirmed = signal(false);
@@ -26,6 +41,24 @@ export class QuestionSwipeCardComponent {
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.tween?.kill());
+  }
+
+  /* required inputs throw (NG0950) and optional inputs still hold their
+   * static default if read in the constructor — Angular only guarantees
+   * bound input values are in place by ngOnInit. This seeds
+   * index/confirmed from the prior answer instead of always starting at
+   * option 0 / unconfirmed — that was the actual bug: nothing ever
+   * restored from initialAnswerId, so Back always looked like the answer
+   * had been wiped even though QuizStateService still had it. */
+  ngOnInit(): void {
+    const prevId = this.initialAnswerId();
+    if (prevId) {
+      const prevIndex = this.options().findIndex((option) => option.id === prevId);
+      if (prevIndex >= 0) {
+        this.index.set(prevIndex);
+        this.confirmed.set(true);
+      }
+    }
   }
 
   prev(): void {
