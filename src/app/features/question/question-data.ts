@@ -7,31 +7,31 @@ export const QUESTIONS: readonly QuestionConfig[] = [
   {
     id: 1,
     interactionType: 'swipe-card',
-    prompt: 'เลือกรูปที่ปลอดภัยสำหรับมู่ลี่',
+    prompt: 'สัญญาข้อที่ 1 เลือกภาพเพื่ออัพโหลดภาพมูลี่วันละ 1 โพส',
     options: [
       {
         id: 'a',
         label: 'ตัวเลือก 1',
-        image: 'assets/images/question/q1/Q1_C1.png',
+        image: 'assets/images/question/q1/Q1_C1.webp',
         isCorrect: true,
       },
       {
         id: 'b',
         label: 'ตัวเลือก 2',
-        image: 'assets/images/question/q1/Q1_C2.png',
+        image: 'assets/images/question/q1/Q1_C2.webp',
         isCorrect: false,
       },
       {
         id: 'c',
         label: 'ตัวเลือก 3',
-        image: 'assets/images/question/q1/Q1_C3.png',
-        isCorrect: false,
+        image: 'assets/images/question/q1/Q1_C3.webp',
+        isCorrect: true,
       },
       {
         id: 'd',
         label: 'ตัวเลือก 4',
-        image: 'assets/images/question/q1/Q1_C4.png',
-        isCorrect: true,
+        image: 'assets/images/question/q1/Q1_C4.webp',
+        isCorrect: false,
       },
     ],
   },
