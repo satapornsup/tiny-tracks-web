@@ -14,6 +14,119 @@
     height: calc(100dvh - 56px);
   }
 
+  /* Q1-only background clutter (speech bubbles/arrows/heart, per the
+     design reference) — first in the DOM with no z-index of its own, so
+     it naturally paints BEHIND both &__swipe-card (the phone) and
+     &__nav (explicit z-index:3): default stacking order compares
+     z-index:auto siblings by DOM position, and any positive z-index
+     always wins over auto regardless of order, so this needs no z-index
+     tuning to stay behind either one. Tall vertical strip pinned to the
+     screen edge, same technique as the margin-cloud decor on Start/Home —
+     Tailwind's img{max-width:100%} preflight would otherwise cap the
+     width against this element's own (irrelevant) auto width, so
+     max-width:none lets it size from its own intrinsic ratio instead. */
+  &__decor {
+    position: absolute;
+    bottom: 0;
+    height: 65%;
+    width: auto;
+    max-width: none;
+    pointer-events: none;
+  }
+
+  &__decor--left {
+    left: -1%;
+    bottom: -5%;
+  }
+
+  &__decor--right {
+    top: -5%;
+    right: -1%;
+  }
+
+  /* text-as-real-text (not baked into the reference image) stat callouts
+     that sit alongside the bubble/arrow decor — same DOM-order/no-z-index
+     trick keeps these behind the phone and nav too. Hidden on mobile
+     rather than repositioned: there's no spare space beside the phone at
+     that width (it already runs edge-to-edge), so keeping them would
+     just overlap it instead of framing it. */
+  &__callout {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    pointer-events: none;
+
+    @media (max-width: 640px) {
+      display: none;
+    }
+  }
+
+  &__callout--left {
+    top: 8%;
+    left: 2%;
+    animation: question-callout-float 5s ease-in-out infinite;
+  }
+
+  &__callout--right {
+    bottom: 12%;
+    right: 2%;
+    align-items: flex-end;
+    text-align: right;
+    /* offset so the two sides don't bob in perfect unison — same trick
+       as home's margin-text stagger, just two groups instead of four */
+    animation: question-callout-float 5s ease-in-out infinite;
+    animation-delay: -2.5s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__callout--left,
+    &__callout--right {
+      animation: none;
+    }
+  }
+
+  &__callout-arrow,
+  &__callout-heart {
+    width: 90px;
+    margin-bottom: 8px;
+  }
+
+  &__callout-title {
+    margin: 0 0 2px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 1;
+
+    &--green {
+      color: var(--color-brand-green);
+    }
+
+    &--pink {
+      color: var(--color-brand-pink);
+    }
+  }
+
+  &__callout-line {
+    margin: 3px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 20px;
+    color: var(--color-ink);
+    opacity: 0.55;
+    white-space: nowrap;
+  }
+
+  &__callout-icon {
+    width: 22px;
+    height: auto;
+    flex-shrink: 0;
+  }
+
   &__prompt {
     margin: 0;
     max-width: 640px;
@@ -63,5 +176,16 @@
 
   &__nav--next {
     right: 20px;
+  }
+}
+
+@keyframes question-callout-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
   }
 }

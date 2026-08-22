@@ -1,12 +1,46 @@
-<app-header [pageLabel]="questionId + '.' + config.prompt" />
+<app-header [pageLabel]="config.prompt" />
 
 <main class="question-shell">
+  @if (config.interactionType === 'swipe-card') {
+  <img class="question-shell__decor question-shell__decor--left" src="assets/images/question/q1/decor-left.webp" alt=""
+    aria-hidden="true" />
+  <img class="question-shell__decor question-shell__decor--right" src="assets/images/question/q1/decor-right.webp"
+    alt="" aria-hidden="true" />
+
+  <div class="question-shell__callout question-shell__callout--left" aria-hidden="true">
+    <img class="question-shell__callout-arrow" src="assets/images/question/q1/arrow.webp" alt="" />
+    <p class="question-shell__callout-title question-shell__callout-title--green">SHEAR</p>
+    <p class="question-shell__callout-line">สร้างยอดแชร์เกิน..5 k !</p>
+    <p class="question-shell__callout-line pl-10">
+      <img class="question-shell__callout-icon" src="assets/images/question/q1/plus.webp" alt="" />
+      อัพโหลดภาพ
+    </p>
+    <p class="question-shell__callout-line">
+      สุดไวรัล ...
+      <img class="question-shell__callout-icon" src="assets/images/question/q1/folder.webp" alt="" />
+    </p>
+  </div>
+
+  <div class="question-shell__callout question-shell__callout--right" aria-hidden="true">
+    <img class="question-shell__callout-heart" src="assets/images/question/q1/heart.webp" alt="" />
+    <p class="question-shell__callout-title question-shell__callout-title--pink">LIKE</p>
+    <p class="question-shell__callout-line">สร้างยอดไลค์เกิน 10k !</p>
+    <p class="question-shell__callout-line">
+      <img class="question-shell__callout-icon w-4!" src="assets/images/question/q1/person.webp" alt="" />
+      สร้างฐานแฟนคลับ
+    </p>
+    <p class="question-shell__callout-line pr-8">พร้อมรับ สปอนเซอร์..</p>
+  </div>
+  }
+
   @switch (config.interactionType) {
   @case ('swipe-card') {
-  <app-question-swipe-card class="question-shell__swipe-card" [options]="config.options!" />
+  <app-question-swipe-card class="question-shell__swipe-card" [options]="config.options!"
+    [initialAnswerId]="initialSwipeAnswerId" />
   }
   @case ('outfit-picker') {
-  <app-question-outfit-picker class="question-shell__outfit-picker" [items]="config.items!" />
+  <app-question-outfit-picker class="question-shell__outfit-picker" [items]="config.items!"
+    [initialTopId]="initialOutfitTopId" [initialBottomId]="initialOutfitBottomId" />
   }
   @default {
   <p class="question-shell__prompt">{{ config.prompt }}</p>

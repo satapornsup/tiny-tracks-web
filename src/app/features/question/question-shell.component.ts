@@ -27,6 +27,18 @@ export class QuestionShellComponent {
   readonly questionId = this.route.snapshot.data['questionId'] as QuestionId;
   readonly config = QUESTIONS.find((q) => q.id === this.questionId)!;
 
+  /** whatever was recorded for this question last time (Back from Q2-Q6
+   *  keeps answers per CLAUDE.md §7), read once — the sub-widgets below
+   *  only need this to seed their OWN initial selection, not react to it
+   *  afterward. undefined on a first visit. */
+  private readonly previousAnswer = this.quizState.getAnswer(this.questionId);
+  readonly initialSwipeAnswerId = (this.previousAnswer?.value as string | null | undefined) ?? null;
+  private readonly previousOutfit = this.previousAnswer?.value as
+    | { top: string | null; bottom: string | null }
+    | undefined;
+  readonly initialOutfitTopId = this.previousOutfit?.top ?? null;
+  readonly initialOutfitBottomId = this.previousOutfit?.bottom ?? null;
+
   private readonly swipeCard = viewChild(QuestionSwipeCardComponent);
   private readonly outfitPicker = viewChild(QuestionOutfitPickerComponent);
 
