@@ -11,9 +11,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: min(110px, 32vw);
+  width: min(135px, 32vw);
   aspect-ratio: 110 / 48;
-  gap: 6px;
+  gap: 10px;
   padding: 0 8px;
   border: none;
   background: transparent;
@@ -75,7 +75,7 @@
     position: relative;
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 18px;
+    font-size: 25px;
     color: var(--color-ink);
     white-space: nowrap;
 
