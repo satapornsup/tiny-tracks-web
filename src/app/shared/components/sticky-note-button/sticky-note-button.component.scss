@@ -78,13 +78,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
+    width: 30px;
+    height: 30px;
     flex-shrink: 0;
 
     @media (max-width: 640px) {
-      width: 16px;
-      height: 16px;
+      width: 20px;
+      height: 20px;
     }
 
     ::ng-deep svg,
