@@ -9,8 +9,8 @@
   &__arrow {
     position: absolute;
     top: 44%;
-    width: 34px;
-    height: 34px;
+    width: 50px;
+    height: 50px;
     transform: translateY(-50%);
     border: none;
     background: transparent;
@@ -40,32 +40,26 @@
   }
 
   &__arrow--prev {
-    left: 9%;
-    transform: translate(-50%, -50%);
+    left: 7%;
 
     &:hover {
-      transform: translate(-50%, -50%) scale(1.15);
+      transform: translateY(-50%) scale(1.15);
     }
 
     &:active {
-      transform: translate(-50%, -50%) scale(0.9);
-    }
-
-    img {
-      transform: scaleX(-1);
+      transform: translateY(-50%) scale(0.9);
     }
   }
 
   &__arrow--next {
-    right: 9%;
-    transform: translate(50%, -50%);
+    right: 7%;
 
     &:hover {
-      transform: translate(50%, -50%) scale(1.15);
+      transform: translateY(-50%) scale(1.15);
     }
 
     &:active {
-      transform: translate(50%, -50%) scale(0.9);
+      transform: translateY(-50%) scale(0.9);
     }
   }
 
@@ -136,11 +130,11 @@
   &__counter {
     position: absolute;
     left: 50%;
-    top: 77.5%;
+    top: 78%;
     transform: translateX(-50%);
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 25px;
+    font-size: 28px;
     color: var(--color-ink);
 
     @media (max-width: 640px) {
