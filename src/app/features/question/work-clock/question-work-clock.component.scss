@@ -322,6 +322,13 @@
      only rendered for the off case (see @if in the template) — the
      button's own background covers that state instead. */
   &__switch {
+    /* exposed as custom properties (not just inline clamp() values) so
+       &__switch-knob can derive its exact px size from the SAME numbers
+       via calc() instead of a percentage — see &__switch-knob for why */
+    --switch-w: clamp(84px, 7.8125vw, 150px);
+    --switch-pad-y: clamp(6px, 0.5729vw, 11px);
+    --switch-pad-x: clamp(10px, 0.8333vw, 16px);
+
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -329,7 +336,7 @@
     /* 7.8125vw = 150 ÷ 19.2, same 1920-reference K as the rest of this
        card — was 9.5vw, which hit its own 150px ceiling at a DIFFERENT
        viewport width than --clock-size/&__stage hit theirs */
-    width: clamp(84px, 7.8125vw, 150px);
+    width: var(--switch-w);
     aspect-ratio: 100 / 42;
     /* padding is the ONLY thing controlling the gap between the knob and
        the pill's border ring now (see &__switch-knob) — measured at
@@ -339,12 +346,24 @@
        case, which read fine at the same 4px) — needs noticeably more
        clearance, especially horizontally, not just enough to technically
        not overlap */
-    padding: clamp(6px, 0.5729vw, 11px) clamp(10px, 0.8333vw, 16px);
+    padding: var(--switch-pad-y) var(--switch-pad-x);
     border: none;
     border-radius: 999px;
     background: transparent;
     cursor: pointer;
     transition: transform 0.15s ease;
+    /* Safari draws its own thick blue ring on a <button> after a plain
+       mouse click, not just keyboard nav (Chrome only does that for
+       :focus-visible) — that's the "switch looks different in Safari"
+       the screenshot showed. Suppress the default outline everywhere and
+       only draw a custom one for :focus-visible (keyboard), same result
+       in both browsers either way. */
+    outline: none;
+
+    &:focus-visible {
+      outline: 2px solid var(--color-brand-pink);
+      outline-offset: 3px;
+    }
 
     &:hover {
       transform: scale(1.04);
@@ -364,11 +383,17 @@
     pointer-events: none;
   }
 
-  /* pass-through — the knob itself is the flex item that needs to sit
-     flush against the pill's rounded edge, this wrapper only exists in
-     the DOM so the template stays symmetric with &__switch-label */
+  /* NOT display:contents (tried first, and the real cause of the Safari
+     size bug — display:contents dropping/mis-sizing a flex-item
+     descendant, and position:relative losing its stacking context inside
+     one, are both long-standing WebKit-specific bugs; the calc()-based
+     knob sizing fix alone did nothing because this was the actual
+     culprit, not the height:100% math). A plain inline-flex wrapper
+     sized to its child achieves the same "invisible passthrough" layout
+     result using only well-supported behavior in every engine. */
   &__switch-track {
-    display: contents;
+    display: inline-flex;
+    flex-shrink: 0;
   }
 
   &__switch-knob {
@@ -379,16 +404,19 @@
        markup */
     position: relative;
     flex-shrink: 0;
-    /* height:100% of the flex container's own content-box (padding
-       already subtracted) + aspect-ratio for the width — ties the knob's
-       size directly to &__switch's padding so it can never grow past the
-       gap that padding reserves for it. A separate vw-based clamp() here
-       (tried first) had its own growth curve that didn't stay in sync
-       with the padding's clamp() at every viewport width, so the knob
-       kept outgrowing its gap and touching the border in the middle of
-       the range even though both ends looked fine. */
-    height: 100%;
-    aspect-ratio: 1 / 1;
+    /* explicit calc() off &__switch's own custom properties, NOT
+       height:100% + aspect-ratio:1/1 (tried first) — that combination
+       renders correctly in Chrome but visibly larger in Safari, because
+       &__switch's height comes from `aspect-ratio: 100/42` rather than
+       an explicit value, and a flex item's percentage height resolving
+       against an aspect-ratio-derived container height is a known
+       Chrome/Safari disagreement point. --switch-w × 42/100 recomputes
+       that same height directly (matching the 100/42 ratio) as plain
+       arithmetic instead of a percentage, so there's nothing left for
+       the two engines to resolve differently. Width and height are the
+       same calc() (a circle), not aspect-ratio:1/1, for the same reason. */
+    width: calc(var(--switch-w) * 42 / 100 - 2 * var(--switch-pad-y));
+    height: calc(var(--switch-w) * 42 / 100 - 2 * var(--switch-pad-y));
     border-radius: 50%;
     background: var(--color-brand-pink);
     transition: background-color 0.2s ease;
