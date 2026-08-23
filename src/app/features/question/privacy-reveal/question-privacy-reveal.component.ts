@@ -33,21 +33,24 @@ export class QuestionPrivacyRevealComponent implements OnInit {
   /** read by QuestionShellComponent when its own Next is pressed */
   readonly isCorrect = computed(() => this.confirmedVia() === 'modal');
 
-  /** the "PRIVATE CONTENT" dialog — open by default (a genuinely first
-   *  visit has nothing to restore, so this is what actually applies
-   *  then). Restoring an answer of 'revealed' starts this closed instead,
-   *  in ngOnInit below: that answer only exists because the player had
-   *  already closed it before confirming, so reopening it on Back would
-   *  show a state that never matched what they actually did. Restoring
-   *  'modal' leaves it open (the default) for the same reason in
-   *  reverse — that answer means they confirmed WITHOUT ever closing it. */
-  readonly modalOpen = signal(true);
+  /** the "PRIVATE CONTENT" dialog — closed by default, so arriving fresh
+   *  from Q1 lands straight on the revealed page (per the latest design:
+   *  the modal is something the player opts INTO via the "PRIVATE
+   *  CONTENT" button in the stage, not a forced blocker on entry).
+   *  Restoring an answer of 'modal' opens it instead, in ngOnInit below:
+   *  that answer only exists because the player confirmed WITHOUT ever
+   *  closing it, so landing on the revealed page on Back would show a
+   *  state that never matched what they actually did. Restoring
+   *  'revealed' leaves it closed (the default) for the same reason in
+   *  reverse — that answer means they'd already closed it before
+   *  confirming. */
+  readonly modalOpen = signal(false);
 
   ngOnInit(): void {
     const restored = this.initialConfirmedVia();
     this.confirmedVia.set(restored);
-    if (restored === 'revealed') {
-      this.modalOpen.set(false);
+    if (restored === 'modal') {
+      this.modalOpen.set(true);
     }
   }
 
