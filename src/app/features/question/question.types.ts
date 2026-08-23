@@ -1,6 +1,6 @@
 import { QuestionId } from '../../shared/services/quiz-state.service';
 
-export type QuestionInteractionType = 'swipe-card' | 'outfit-picker' | 'privacy-reveal' | 'placeholder';
+export type QuestionInteractionType = 'swipe-card' | 'outfit-picker' | 'privacy-reveal' | 'work-clock' | 'placeholder';
 
 export interface SwipeCardOption {
   id: string;
@@ -28,10 +28,24 @@ export interface OutfitItem {
  *  be set at a time — see question-privacy-reveal.component.ts. */
 export type PrivacyConfirmSource = 'modal' | 'revealed';
 
+/** Q3's 4 job offers — each is its own independent toggle (not a single
+ *  radio choice), so each carries its own correct on/off answer. `corner`
+ *  is fixed layout position around the clock, not just data order, since
+ *  the top-row and bottom-row cards read in a different internal order
+ *  (see question-work-clock.component.html). */
+export interface WorkOffer {
+  id: string;
+  amount: string;
+  timeRange: string;
+  isCorrectOn: boolean;
+  corner: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+}
+
 export interface QuestionConfig {
   id: QuestionId;
   interactionType: QuestionInteractionType;
   prompt: string;
   options?: SwipeCardOption[];
   items?: OutfitItem[];
+  workOffers?: WorkOffer[];
 }

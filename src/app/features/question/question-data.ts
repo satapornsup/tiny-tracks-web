@@ -42,8 +42,42 @@ export const QUESTIONS: readonly QuestionConfig[] = [
   },
   {
     id: 3,
-    interactionType: 'placeholder',
-    prompt: 'คำถามข้อ 3 (ยังไม่ได้ออกแบบ)',
+    interactionType: 'work-clock',
+    prompt: 'สัญญาข้อที่ 3 เลือกรับงานให้กับมู่ลี่',
+    /* each offer is its own independent toggle, not a single choice among
+       4 — the reference mockup (aคำถาม3.png) only has the short daytime
+       gig switched on; the other three (overnight, or oddly high-paying
+       for the hours) are correctly off */
+    workOffers: [
+      {
+        id: 'overnight',
+        amount: '20,000 บาท',
+        timeRange: '23.00 น. - 24.00 น.',
+        isCorrectOn: false,
+        corner: 'top-left',
+      },
+      {
+        id: 'daytime-short',
+        amount: '1,500 บาท',
+        timeRange: '13.00 น. - 13.20 น.',
+        isCorrectOn: true,
+        corner: 'top-right',
+      },
+      {
+        id: 'evening',
+        amount: '13,000 บาท',
+        timeRange: '20.00 น. - 21.50 น.',
+        isCorrectOn: false,
+        corner: 'bottom-left',
+      },
+      {
+        id: 'late-afternoon',
+        amount: '1,900 บาท',
+        timeRange: '17.00 น. - 17.30 น.',
+        isCorrectOn: false,
+        corner: 'bottom-right',
+      },
+    ],
   },
   {
     id: 4,

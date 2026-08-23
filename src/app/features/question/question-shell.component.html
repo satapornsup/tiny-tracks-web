@@ -46,6 +46,10 @@
   <app-question-privacy-reveal class="question-shell__privacy-reveal"
     [initialConfirmedVia]="initialPrivacyConfirmedVia" />
   }
+  @case ('work-clock') {
+  <app-question-work-clock class="question-shell__work-clock" [offers]="config.workOffers!"
+    [initialToggles]="initialWorkToggles" />
+  }
   @default {
   <p class="question-shell__prompt">{{ config.prompt }}</p>
   }

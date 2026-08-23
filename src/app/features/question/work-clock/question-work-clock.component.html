@@ -1,0 +1,146 @@
+<div class="work-clock">
+  <div class="work-clock__corner work-clock__corner--left">
+    <img class="work-clock__corner-circle" src="assets/images/question/q3/corner-circle-left.webp" alt=""
+      aria-hidden="true" />
+    <img class="work-clock__corner-hand work-clock__corner-hand--upper" src="assets/images/question/q3/corner-hand.webp"
+      alt="" aria-hidden="true" />
+    <img class="work-clock__corner-hand work-clock__corner-hand--lower"
+      src="assets/images/question/q3/corner-hand-short.webp" alt="" aria-hidden="true" />
+    <img class="work-clock__corner-number work-clock__corner-number--11" src="assets/images/question/q3/number-11.webp"
+      alt="" aria-hidden="true" />
+    <img class="work-clock__corner-number work-clock__corner-number--9" src="assets/images/question/q3/number-9.webp"
+      alt="" aria-hidden="true" />
+    <img class="work-clock__corner-number work-clock__corner-number--7" src="assets/images/question/q3/number-7.webp"
+      alt="" aria-hidden="true" />
+  </div>
+
+  <div class="work-clock__corner work-clock__corner--right">
+    <img class="work-clock__corner-circle" src="assets/images/question/q3/corner-circle-right.webp" alt=""
+      aria-hidden="true" />
+    <img class="work-clock__corner-hand work-clock__corner-hand--upper" src="assets/images/question/q3/corner-hand.webp"
+      alt="" aria-hidden="true" />
+    <img class="work-clock__corner-hand work-clock__corner-hand--lower"
+      src="assets/images/question/q3/corner-hand-short.webp" alt="" aria-hidden="true" />
+    <img class="work-clock__corner-number work-clock__corner-number--1" src="assets/images/question/q3/number-1.webp"
+      alt="" aria-hidden="true" />
+    <img class="work-clock__corner-number work-clock__corner-number--3" src="assets/images/question/q3/number-3.webp"
+      alt="" aria-hidden="true" />
+    <img class="work-clock__corner-number work-clock__corner-number--5" src="assets/images/question/q3/number-5.webp"
+      alt="" aria-hidden="true" />
+  </div>
+
+  <div class="work-clock__stage">
+    <img class="work-clock__face" src="assets/images/question/q3/clock-face.webp" alt="" aria-hidden="true" />
+    <img class="work-clock__hand work-clock__hand--short" src="assets/images/question/q3/hand-short.webp" alt=""
+      aria-hidden="true" />
+    <img class="work-clock__hand" src="assets/images/question/q3/hand.webp" alt="" aria-hidden="true" />
+    <img class="work-clock__pivot" src="assets/images/question/q3/pivot.webp" alt="" aria-hidden="true" />
+
+    <!-- top row reads LIVE label → amount → time → switch (switch nearest
+         the clock, at the bottom of the card); bottom row reads LIVE
+         label → switch → amount → time (switch nearest the clock, at the
+         top of the card this time) — matches the reference mockup, not a
+         mistake to "fix" into one shared order -->
+    @if (offerAt('top-left'); as offer) {
+    <div class="work-clock__card work-clock__card--top-left">
+      <p class="work-clock__live pl-7!">LIVE<span class="work-clock__live-dot"></span></p>
+      <p class="work-clock__amount mr-4!">
+        <img src="assets/images/question/q3/folder.webp" alt="" aria-hidden="true" />
+        {{ offer.amount }}
+      </p>
+      <p class="work-clock__time mr-10!">{{ offer.timeRange }}</p>
+      <button class="work-clock__switch mr-20!" type="button" [class.work-clock__switch--on]="isOn(offer.id)"
+        (click)="toggle(offer.id)">
+        @if (!isOn(offer.id)) {
+        <svg class="work-clock__switch-pill" viewBox="0 0 100 42" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="3" y="3" width="94" height="36" rx="18" fill="var(--color-cream)" stroke="var(--color-rust)"
+            stroke-width="1.8" stroke-dasharray="1 13" stroke-linecap="round" />
+        </svg>
+        }
+        <span class="work-clock__switch-track">
+          <span class="work-clock__switch-knob"></span>
+        </span>
+        <span class="work-clock__switch-label">{{ isOn(offer.id) ? 'LIVE' : 'OFF'
+          }}<span class="work-clock__switch-dot"></span></span>
+      </button>
+    </div>
+    }
+
+    @if (offerAt('top-right'); as offer) {
+    <div class="work-clock__card work-clock__card--top-right items-start!">
+      <p class="work-clock__live">LIVE<span class="work-clock__live-dot"></span></p>
+      <p class="work-clock__amount ml-4!">
+        <img src="assets/images/question/q3/folder.webp" alt="" aria-hidden="true" />
+        {{ offer.amount }}
+      </p>
+      <p class="work-clock__time ml-10!">{{ offer.timeRange }}</p>
+      <button class="work-clock__switch ml-20!" type="button" [class.work-clock__switch--on]="isOn(offer.id)"
+        (click)="toggle(offer.id)">
+        @if (!isOn(offer.id)) {
+        <svg class="work-clock__switch-pill" viewBox="0 0 100 42" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="3" y="3" width="94" height="36" rx="18" fill="var(--color-cream)" stroke="var(--color-rust)"
+            stroke-width="1.8" stroke-dasharray="1 13" stroke-linecap="round" />
+        </svg>
+        }
+        <span class="work-clock__switch-track">
+          <span class="work-clock__switch-knob"></span>
+        </span>
+        <span class="work-clock__switch-label">{{ isOn(offer.id) ? 'LIVE' : 'OFF'
+          }}<span class="work-clock__switch-dot"></span></span>
+      </button>
+    </div>
+    }
+
+    @if (offerAt('bottom-left'); as offer) {
+    <div class="work-clock__card work-clock__card--bottom-left items-start!">
+      <p class="work-clock__live ml-8!">LIVE<span class="work-clock__live-dot"></span></p>
+      <button class="work-clock__switch" type="button" [class.work-clock__switch--on]="isOn(offer.id)"
+        (click)="toggle(offer.id)">
+        @if (!isOn(offer.id)) {
+        <svg class="work-clock__switch-pill" viewBox="0 0 100 42" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="3" y="3" width="94" height="36" rx="18" fill="var(--color-cream)" stroke="var(--color-rust)"
+            stroke-width="1.8" stroke-dasharray="1 13" stroke-linecap="round" />
+        </svg>
+        }
+        <span class="work-clock__switch-track">
+          <span class="work-clock__switch-knob"></span>
+        </span>
+        <span class="work-clock__switch-label">{{ isOn(offer.id) ? 'LIVE' : 'OFF'
+          }}<span class="work-clock__switch-dot"></span></span>
+      </button>
+      <p class="work-clock__amount ml-10!">
+        <img src="assets/images/question/q3/folder.webp" alt="" aria-hidden="true" />
+        {{ offer.amount }}
+      </p>
+      <p class="work-clock__time ml-16!">{{ offer.timeRange }}</p>
+    </div>
+    }
+
+    @if (offerAt('bottom-right'); as offer) {
+    <div class="work-clock__card work-clock__card--bottom-right">
+      <p class="work-clock__live mr-16!">LIVE<span class="work-clock__live-dot"></span></p>
+      <button class="work-clock__switch" type="button" [class.work-clock__switch--on]="isOn(offer.id)"
+        (click)="toggle(offer.id)">
+        @if (!isOn(offer.id)) {
+        <svg class="work-clock__switch-pill" viewBox="0 0 100 42" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="3" y="3" width="94" height="36" rx="18" fill="var(--color-cream)" stroke="var(--color-rust)"
+            stroke-width="1.8" stroke-dasharray="1 13" stroke-linecap="round" />
+        </svg>
+        }
+        <span class="work-clock__switch-track">
+          <span class="work-clock__switch-knob"></span>
+        </span>
+        <span class="work-clock__switch-label">{{ isOn(offer.id) ? 'LIVE' : 'OFF'
+          }}<span class="work-clock__switch-dot"></span></span>
+      </button>
+      <p class="work-clock__amount mr-8!">
+        <img src="assets/images/question/q3/folder.webp" alt="" aria-hidden="true" />
+        {{ offer.amount }}
+      </p>
+      <p class="work-clock__time">{{ offer.timeRange }}</p>
+    </div>
+    }
+  </div>
+
+  <app-confirm-checkbox class="work-clock__confirm" [checked]="confirmed()" (checkedChange)="confirmed.set($event)" />
+</div>

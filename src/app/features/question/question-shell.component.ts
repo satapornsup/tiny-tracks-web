@@ -11,6 +11,7 @@ import { QuestionPrivacyRevealComponent } from './privacy-reveal/question-privac
 import { QUESTIONS } from './question-data';
 import { PrivacyConfirmSource } from './question.types';
 import { QuestionSwipeCardComponent } from './swipe-card/question-swipe-card.component';
+import { QuestionWorkClockComponent } from './work-clock/question-work-clock.component';
 
 @Component({
   selector: 'app-question-shell',
@@ -21,6 +22,7 @@ import { QuestionSwipeCardComponent } from './swipe-card/question-swipe-card.com
     QuestionSwipeCardComponent,
     QuestionOutfitPickerComponent,
     QuestionPrivacyRevealComponent,
+    QuestionWorkClockComponent,
   ],
   templateUrl: './question-shell.component.html',
   styleUrl: './question-shell.component.scss',
@@ -52,10 +54,13 @@ export class QuestionShellComponent {
   readonly initialOutfitBottomId = this.previousOutfit?.bottom ?? null;
   readonly initialPrivacyConfirmedVia =
     (this.previousAnswer?.value as PrivacyConfirmSource | undefined) ?? null;
+  readonly initialWorkToggles =
+    (this.previousAnswer?.value as Record<string, boolean> | undefined) ?? null;
 
   private readonly swipeCard = viewChild(QuestionSwipeCardComponent);
   private readonly outfitPicker = viewChild(QuestionOutfitPickerComponent);
   private readonly privacyReveal = viewChild(QuestionPrivacyRevealComponent);
+  private readonly workClock = viewChild(QuestionWorkClockComponent);
 
   /** swipe-card and outfit-picker questions need an explicit confirm tick
    *  before Next unlocks (outfit-picker also needs both slots filled);
@@ -70,6 +75,9 @@ export class QuestionShellComponent {
     }
     if (this.config.interactionType === 'privacy-reveal') {
       return !this.privacyReveal()?.confirmed();
+    }
+    if (this.config.interactionType === 'work-clock') {
+      return !this.workClock()?.confirmed();
     }
     return false;
   });
@@ -99,6 +107,13 @@ export class QuestionShellComponent {
         this.questionId,
         reveal?.confirmedVia() ?? null,
         reveal?.isCorrect() ?? false,
+      );
+    } else if (this.config.interactionType === 'work-clock') {
+      const clock = this.workClock();
+      this.quizState.recordAnswer(
+        this.questionId,
+        clock?.toggles() ?? null,
+        clock?.isCorrect() ?? false,
       );
     } else {
       // stub questions (Q2/Q3/Q4/Q6 pending design) still need a

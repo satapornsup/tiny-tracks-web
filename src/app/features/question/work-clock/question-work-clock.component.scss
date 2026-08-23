@@ -1,0 +1,505 @@
+.work-clock {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  /* three-way min/vh/vw, same continuous-scaling idea as Q2's --panel-h —
+     shrinks together on a narrow OR short viewport instead of hard-
+     switching to a different layout at some breakpoint */
+  /* the vw term is tuned to the Start page's own K = ceiling ÷ 19.2
+     technique (CLAUDE.md §3.7) — 1920px is the reference viewport, so
+     34.375vw lands on exactly 660px there and shrinks proportionally
+     below it. The old 60vw was picked once with no such reference: at
+     1920 it was already clamped by 70dvh/660px (never actually 60vw),
+     but at 1440 THIS term became the binding one at a different, un-
+     coordinated ratio — so the clock shrank one amount while &__stage
+     and the card text below (each tuned with their own uncoordinated vw
+     number) shrank by DIFFERENT amounts, and the whole composition
+     visibly desynced between the two screens even though 1920 alone
+     looked fine. Every vw coefficient in this component now uses the
+     same K = ceiling ÷ 19.2 formula so they all shrink in lockstep. */
+  --clock-size: min(70dvh, 34.375vw, 660px);
+  --header-h: 72px;
+
+  @media (max-width: 640px) {
+    --header-h: 56px;
+  }
+
+  /* pinned to the true screen edge, tall dotted-circle decor peeking in
+     from off-screen — same technique as question-shell's Q1 &__decor and
+     Q5's &__margin-decor. Purely atmospheric (the interactive hand is
+     the center clock's, see &__hand below), so no hover/rotation here. */
+  &__corner {
+    position: fixed;
+    top: 55%;
+    height: min(90dvh, 850px);
+    transform: translateY(-50%);
+    pointer-events: none;
+    opacity: 0.9;
+    z-index: 0;
+
+    @media (max-width: 900px) {
+      display: none;
+    }
+  }
+
+  &__corner--left {
+    left: 0%;
+  }
+
+  &__corner--right {
+    right: 0%;
+  }
+
+  &__corner-circle {
+    display: block;
+    height: 100%;
+    width: auto;
+    max-width: none;
+  }
+
+  /* corner-hand.webp is a tall pointed-top/flat-bottom bar (like a giant
+     pencil) — the reference mockup (aคำถาม3.png) uses TWO copies of it
+     pivoting from the SAME point (their flat bottom ends), fanned out
+     into a wide "<" shape, not one bar rotating around its own center
+     (the original single-hand version here, which floated near the
+     middle of the corner area unrelated to where the numbers actually
+     sit). Anchor point + both angles were measured directly off that
+     reference image against the same corner container's own box (left:2%
+     top:48% ≈ where its "<" vertex sits relative to the "9"/"3" label),
+     same technique the &__card positions below already used. */
+  &__corner-hand {
+    position: absolute;
+    top: 48%;
+    left: -3%;
+    width: auto;
+    max-width: none;
+    transform-origin: 50% 100%;
+  }
+
+  /* spins continuously from its own measured base angle, same idea as
+     the center clock's two hands (&__hand / &__hand--short) — each
+     variant needs its OWN @keyframes because the animated `transform`
+     bakes in that variant's fixed translate/scaleX alongside the
+     changing rotate(), not just a bare rotate() a shared keyframes rule
+     could reuse across variants */
+  &__corner-hand--upper {
+    height: 33%;
+    transform: translate(-50%, -100%) rotate(66deg);
+    animation: work-clock-corner-spin-left-upper 8s linear infinite;
+  }
+
+  &__corner-hand--lower {
+    height: 22%;
+    transform: translate(-50%, -100%) rotate(107deg);
+    animation: work-clock-corner-spin-left-lower 13s linear infinite;
+  }
+
+  /* right side's anchor is near ITS right edge, not its left — same
+     reason &__corner-number--1/3/5 below use `right:` instead of reusing
+     the left corner's `left:` values (the two corner assets aren't a
+     single mirrored copy of one layout, each side's content is measured
+     against its own edge). translate(50%,...) (positive, not -50%) moves
+     the pivot from the element's own left edge over to its right edge to
+     land on that right: anchor line. */
+  &__corner--right &__corner-hand {
+    left: auto;
+    right: -3%;
+  }
+
+  &__corner--right &__corner-hand--upper {
+    transform: translate(50%, -100%) rotate(-66deg) scaleX(-1);
+    animation: work-clock-corner-spin-right-upper 8s linear infinite;
+  }
+
+  &__corner--right &__corner-hand--lower {
+    transform: translate(50%, -100%) rotate(-107deg) scaleX(-1);
+    animation: work-clock-corner-spin-right-lower 13s linear infinite;
+  }
+
+  &__corner-number {
+    position: absolute;
+    width: 9%;
+    max-width: none;
+  }
+
+  &__corner--left &__corner-number--11 {
+    top: 14%;
+    left: 10%;
+    width: 18%;
+  }
+
+  &__corner--left &__corner-number--9 {
+    top: 45%;
+    left: 68%;
+  }
+
+  &__corner--left &__corner-number--7 {
+    bottom: 14%;
+    left: 10%;
+  }
+
+  &__corner--right &__corner-number--1 {
+    top: 14%;
+    right: 10%;
+  }
+
+  &__corner--right &__corner-number--3 {
+    top: 45%;
+    right: 68%;
+  }
+
+  &__corner--right &__corner-number--5 {
+    bottom: 14%;
+    right: 10%;
+  }
+
+  /* everything below lives in one shared coordinate box (the clock plus
+     all 4 offer cards), absolutely centered — card left/top % were
+     measured off the desktop reference mockup (aคำถาม3.png) against this
+     same box, same wide-short-viewport caveat as Q2's &__stage */
+  &__stage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* 46.875vw = 900 ÷ 19.2, same 1920-reference K as --clock-size above
+       — the card positions below are %-of-this-box, so this box has to
+       shrink at the exact same rate as --clock-size or the cards drift
+       relative to the clock between screen sizes even though each looks
+       fine in isolation */
+    width: min(46.875vw, 900px);
+    aspect-ratio: 800 / 600;
+    z-index: 1;
+  }
+
+  &__face {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: var(--clock-size);
+    width: auto;
+    max-width: none;
+    transform: translate(-50%, -50%);
+  }
+
+  /* hand.webp's own canvas has the pivot point at its LEFT edge, vertical
+     center (a long bar extending rightward) — translate(0,-50%) lines
+     that edge up with &__pivot below, rotate spins around that same
+     point since transform-origin defaults to the element's own center...
+     no: origin is explicitly set to left center to match the asset. */
+  &__hand {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: calc(var(--clock-size) * 0.42);
+    height: auto;
+    max-width: none;
+    transform-origin: 2% 50%;
+    transform: translate(-2%, -50%);
+    animation: work-clock-spin 6s linear infinite;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+  }
+
+  /* hand-short.webp (element3-05) is the same grey bar art as hand.webp
+     (element3-06) — same 90px thickness in the source, just a shorter
+     length (398px vs 1274px, ≈0.31× as long) — so it shares &__hand's
+     pivot/rotation setup entirely and only overrides width + spin speed.
+     4× slower than the long hand so the two visibly move at different
+     rates (hour vs minute hand), not a literal 12:1 clock ratio since
+     this whole spin is already stylized/non-literal-time */
+  &__hand--short {
+    width: calc(var(--clock-size) * 0.17);
+    animation-duration: 24s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* matches each animated rule's own specificity (including the
+       &__corner--right combinator ones) so this actually wins the
+       cascade instead of losing to the more-specific right-side rules */
+    &__hand,
+    &__corner-hand--upper,
+    &__corner-hand--lower,
+    &__corner--right &__corner-hand--upper,
+    &__corner--right &__corner-hand--lower {
+      animation: none;
+    }
+  }
+
+  &__pivot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: calc(var(--clock-size) * 0.09);
+    max-width: none;
+    transform: translate(-50%, -50%);
+  }
+
+  &__card {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  &__card--top-left {
+    top: 0%;
+    left: -5%;
+  }
+
+  &__card--top-right {
+    top: 0%;
+    right: -5%;
+  }
+
+  &__card--bottom-left {
+    bottom: 0%;
+    left: 0%;
+  }
+
+  &__card--bottom-right {
+    bottom: 0%;
+    right: -5%;
+  }
+
+  /* same 1920-reference K = ceiling ÷ 19.2 as --clock-size/&__stage above
+     for every clamp() in this card — otherwise the clock shrinks at ITS
+     own rate between 1920→1440 while this text shrinks at a different,
+     independently-picked rate, which is exactly what read as "the clock
+     and the cards drifted apart" even though the card's own position
+     (a % of &__stage) didn't actually move */
+  &__live {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(12px, 1.8229vw, 35px);
+    color: var(--color-brand-pink);
+  }
+
+  &__live-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--color-brand-pink);
+  }
+
+  &__amount {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(11px, 1.3021vw, 25px);
+    color: var(--color-ink);
+
+    img {
+      width: clamp(14px, 1.5625vw, 30px);
+      height: auto;
+    }
+  }
+
+  &__time {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(11px, 1.3021vw, 25px);
+    color: var(--color-ink);
+    white-space: nowrap;
+  }
+
+  /* off state's dashed pill is the exact same SVG round-dot-dash pattern
+     as ConfirmCheckboxComponent and StickyNoteButtonComponent (viewBox
+     110×48, rx=20, stroke-dasharray "1 15") instead of a CSS `border:
+     dashed` — a CSS dash draws short rectangular strokes, this project's
+     established dash motif everywhere else is round dots, so the switch
+     needed the same SVG rather than its own one-off border style. On
+     state has no dashed ring at all (solid fill instead), so the SVG is
+     only rendered for the off case (see @if in the template) — the
+     button's own background covers that state instead. */
+  &__switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-direction: row;
+    /* 7.8125vw = 150 ÷ 19.2, same 1920-reference K as the rest of this
+       card — was 9.5vw, which hit its own 150px ceiling at a DIFFERENT
+       viewport width than --clock-size/&__stage hit theirs */
+    width: clamp(84px, 7.8125vw, 150px);
+    aspect-ratio: 100 / 42;
+    /* padding is the ONLY thing controlling the gap between the knob and
+       the pill's border ring now (see &__switch-knob) — measured at
+       ~4px it was real but read as touching, because a circle meeting a
+       ROUNDED end-cap (the horizontal case) visually "kisses" much
+       sooner than the same linear gap against a flat edge (the vertical
+       case, which read fine at the same 4px) — needs noticeably more
+       clearance, especially horizontally, not just enough to technically
+       not overlap */
+    padding: clamp(6px, 0.5729vw, 11px) clamp(10px, 0.8333vw, 16px);
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+
+    &:hover {
+      transform: scale(1.04);
+    }
+
+    &:active {
+      transform: scale(0.96);
+    }
+  }
+
+  &__switch-pill {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+  }
+
+  /* pass-through — the knob itself is the flex item that needs to sit
+     flush against the pill's rounded edge, this wrapper only exists in
+     the DOM so the template stays symmetric with &__switch-label */
+  &__switch-track {
+    display: contents;
+  }
+
+  &__switch-knob {
+    /* same reason &__box is relative in confirm-checkbox.component.scss —
+       a position:absolute sibling paints above static-flow content
+       regardless of DOM order, so without this the knob/label would sit
+       invisibly BEHIND &__switch-pill even though they're later in the
+       markup */
+    position: relative;
+    flex-shrink: 0;
+    /* height:100% of the flex container's own content-box (padding
+       already subtracted) + aspect-ratio for the width — ties the knob's
+       size directly to &__switch's padding so it can never grow past the
+       gap that padding reserves for it. A separate vw-based clamp() here
+       (tried first) had its own growth curve that didn't stay in sync
+       with the padding's clamp() at every viewport width, so the knob
+       kept outgrowing its gap and touching the border in the middle of
+       the range even though both ends looked fine. */
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    background: var(--color-brand-pink);
+    transition: background-color 0.2s ease;
+  }
+
+  &__switch-label {
+    position: relative;
+    /* fills whatever space the (fixed-size) knob doesn't take, then
+       centers its own text+dot inside that space — no separate gap
+       property needed between knob and label, the centering does that
+       job on its own and keeps the knob flush regardless of label width */
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(11px, 1.4583vw, 28px);
+    color: var(--color-ink);
+  }
+
+  /* small trailing bullet after OFF/LIVE, raised near the text's cap-
+     height (superscript-like) same as the reference — align-self instead
+     of a fixed negative margin-top so it scales with the row's own
+     height (which itself scales with the clamp()'d label font-size)
+     instead of overshooting past the pill's edge on smaller renders, the
+     bug the old fixed -25px had */
+  &__switch-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    align-self: flex-start;
+    margin-top: 2px;
+    background: currentColor;
+  }
+
+  &__switch--on {
+    flex-direction: row-reverse;
+    background: var(--color-brand-pink);
+  }
+
+  &__switch--on &__switch-knob {
+    background: white;
+  }
+
+  &__switch--on &__switch-label {
+    color: white;
+  }
+
+  /* same row as the shell's back/next nav buttons */
+  &__confirm {
+    position: fixed;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    z-index: 3;
+  }
+}
+
+@keyframes work-clock-spin {
+  from {
+    transform: translate(-2%, -50%) rotate(0deg);
+  }
+
+  to {
+    transform: translate(-2%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes work-clock-corner-spin-left-upper {
+  from {
+    transform: translate(-50%, -100%) rotate(66deg);
+  }
+
+  to {
+    transform: translate(-50%, -100%) rotate(426deg);
+  }
+}
+
+@keyframes work-clock-corner-spin-left-lower {
+  from {
+    transform: translate(-50%, -100%) rotate(107deg);
+  }
+
+  to {
+    transform: translate(-50%, -100%) rotate(467deg);
+  }
+}
+
+/* right side keeps the SAME sign direction as its left counterpart (more
+   negative, matching left's more positive) rather than flipping it —
+   since scaleX(-1) already mirrors the visible spin direction once
+   rendered, matching signs here is what keeps the two sides' motion
+   looking consistent with each other on screen */
+@keyframes work-clock-corner-spin-right-upper {
+  from {
+    transform: translate(50%, -100%) rotate(-66deg) scaleX(-1);
+  }
+
+  to {
+    transform: translate(50%, -100%) rotate(-426deg) scaleX(-1);
+  }
+}
+
+@keyframes work-clock-corner-spin-right-lower {
+  from {
+    transform: translate(50%, -100%) rotate(-107deg) scaleX(-1);
+  }
+
+  to {
+    transform: translate(50%, -100%) rotate(-467deg) scaleX(-1);
+  }
+}
