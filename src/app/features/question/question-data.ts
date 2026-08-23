@@ -37,8 +37,8 @@ export const QUESTIONS: readonly QuestionConfig[] = [
   },
   {
     id: 2,
-    interactionType: 'placeholder',
-    prompt: 'คำถามข้อ 2 (ยังไม่ได้ออกแบบ)',
+    interactionType: 'privacy-reveal',
+    prompt: 'สัญญาข้อที่ 2 ต้องเปิดเผยข้อมูลส่วนตัวต่อสาธารณะ',
   },
   {
     id: 3,

@@ -1,0 +1,444 @@
+.privacy-reveal {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  /* shared by both fixed side panels and the stage's own left/right
+     inset below, so they can never drift out of sync with each other.
+     --panel-w is derived from --panel-h and panel-texture.webp's own
+     500/1224 aspect ratio (not chosen independently) — same technique as
+     question-outfit-picker's --panel-w, since &__panel-bg shows that
+     texture at its real ratio (height-driven, width auto) instead of
+     cropping it to a fixed width via background-size:cover.
+     Three-way min, same shape as question-outfit-picker's --panel-h: the
+     dvh term fills the true available height with no gap on an ordinary
+     screen (its own reason for existing — see git history), the 1000px
+     term is a sanity ceiling on a freakishly tall viewport, and the 55vw
+     term is what actually makes this SHRINK on a narrow one instead of
+     hard-switching to a different stacked layout at some breakpoint (the
+     previous approach) — same continuous-scaling idea as Q5's wardrobe
+     panels. 55vw specifically keeps the dvh term winning (so the no-gap
+     behavior holds) on anything ~1080px tall or shorter at typical
+     desktop widths; only kicks in once the viewport itself gets narrow.
+     max(220px, …) floors how far --panel-h (and so --panel-w) can shrink
+     below ~400px viewport width (where 55vw would otherwise drop under
+     it) — &__panel-scroll's padding is % now (see that rule), so this
+     floor is about keeping the wood-frame column from going fully
+     needle-thin more than about legibility; too high a floor instead
+     starves &__stage of room and the item cluster starts overlapping the
+     PRIVATE CONTENT button on a true small-phone width. */
+  --header-h: 72px;
+  --panel-h: max(220px, min(calc(100dvh - var(--header-h)), 1000px, 55vw));
+  --panel-w: calc(var(--panel-h) * 500 / 1224);
+
+  @media (max-width: 640px) {
+    --header-h: 56px;
+  }
+
+  /* same dotted-cloud background clutter technique as Q1's
+     &__decor/Q5's &__margin-decor — plain z-index:auto img elements,
+     first in the DOM so every other (explicitly z-indexed) piece here
+     naturally paints above them without needing a z-index of their own */
+  &__decor {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.7;
+    /* purely atmospheric background clutter (unlike &__item below) — a
+       static per-variant tilt via --rot, same custom-property technique
+       as Start's &__decor and &__item, just without the hover delta
+       since these aren't meant to read as interactive/pick-up-able */
+    transform: rotate(var(--rot, 0deg));
+  }
+
+  /* positioned in % against &__privacy-reveal's own full width/height
+     (not &__stage's narrower box) — measured off the desktop reference
+     mockup (b คำถาม2.png) at its full 2000×1125 canvas */
+  &__decor--a {
+    top: 40%;
+    left: 5%;
+    width: 31%;
+    max-width: none;
+    --rot: -50deg;
+  }
+
+  &__decor--b {
+    top: 66%;
+    right: 19%;
+    width: 19%;
+    max-width: none;
+    --rot: 15deg;
+  }
+
+  &__decor--c {
+    top: -35%;
+    right: 33%;
+    width: 20%;
+    max-width: none;
+    --rot: 150deg;
+  }
+
+  &__decor--d {
+    bottom: -46%;
+    left: 33%;
+    width: 20%;
+    max-width: none;
+    --rot: 150deg;
+  }
+
+  /* the two reading panels — pinned to the actual screen edge (not part
+     of the centered flow) and spanning the full header-to-bottom height,
+     same fixed-column + flex-centering technique as
+     question-outfit-picker's &__column */
+  &__panel {
+    position: fixed;
+    top: var(--header-h);
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__panel--right {
+    left: auto;
+    right: 0;
+  }
+
+  /* shrink-wraps &__panel-bg exactly — position:relative makes IT (not
+     &__panel) the containing block for &__panel-scroll's inset:0 below,
+     same &__panel-wrap/&__panel pairing as question-outfit-picker */
+  &__panel-wrap {
+    position: relative;
+    display: block;
+    line-height: 0;
+    height: var(--panel-h);
+  }
+
+  /* real panel-texture.webp shown at its own 500/1224 ratio — height
+     drives the box (via &__panel-wrap), width follows automatically, so
+     the full image always shows with nothing cropped off, same as
+     question-outfit-picker's &__panel img, at every viewport size — the
+     wardrobe panels it's modeled on stay tall columns all the way down
+     to phone widths too, same as this one does now. */
+  &__panel-bg {
+    display: block;
+    height: 100%;
+    width: auto;
+    max-width: none;
+    pointer-events: none;
+  }
+
+  /* position:absolute + inset:0 always locks this to &__panel-wrap's exact
+     box (border-box, so padding below never grows it past that) —
+     overflow-y:auto clips/scrolls whatever text doesn't fit rather than
+     ever spilling past the wood-texture backdrop. The one real gap was
+     that the scrollability wasn't obvious at a glance (default macOS/iOS
+     scrollbars are invisible until actively scrolling) — an always-on
+     thin scrollbar makes "there's more below, scroll" legible instead of
+     the text just looking cut off. */
+  &__panel-scroll {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    /* % (not the old fixed 65/40/100/40px) so this scales down with
+       --panel-w on a narrow viewport instead of eating an ever-larger
+       share of it — at the panel sizes this was tuned against it lands
+       close to the old px values, but a fixed px padding stopped leaving
+       any real room for text once --panel-h's 55vw term (see that var's
+       comment) started shrinking the panel for real */
+    padding: 16% 10% 25% 10%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--color-ink);
+    scrollbar-width: thin;
+    scrollbar-color: white transparent;
+
+    &::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: white;
+      border-radius: 999px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+
+  &__photo {
+    display: block;
+    width: 78%;
+    margin: 0 auto 10px;
+    max-width: none;
+
+    @media (max-width: 640px) {
+      width: 45%;
+    }
+  }
+
+  &__photo-eye {
+    width: 40%;
+  }
+
+  /* clamp (not a fixed 22px) so this scales down continuously as the
+     viewport narrows, same spirit as --panel-h above — a fixed size here
+     was fighting the panel's own shrinking width, forcing text to wrap
+     to 1-2 letters per line well before --panel-h's floor even kicks in */
+  &__name {
+    font-weight: 700;
+    font-size: clamp(11px, 3vw, 22px);
+    color: white;
+    margin-bottom: 2px !important;
+  }
+
+  &__description {
+    font-weight: 600;
+    font-size: clamp(11px, 3vw, 22px);
+    color: white;
+  }
+
+  &__math-card,
+  &__pouch-inline {
+    display: block;
+    width: 120px;
+    margin: 6px 0;
+    max-width: none;
+    align-self: center;
+  }
+
+  /* everything between the two fixed panels — plain absolute-positioned
+     clutter (paper, pencil, shirt, id card), same DOM-order/no-z-index
+     trick as Q1's decor so it stays behind the modal (explicit z-index)
+     without needing tuning of its own. Every item's top/left % below was
+     measured off the desktop reference mockup, a wide-short viewport —
+     stretching this box top:0/bottom:0 across a tall/narrow one (tablet
+     portrait, etc.) blows those % far apart vertically since they're all
+     relative to a box that's suddenly much taller. Capped height +
+     vertical centering (same technique as question-outfit-picker's
+     --panel-h) keeps the box close to the proportions the % were actually
+     measured against, on any viewport. */
+  &__stage {
+    position: absolute;
+    top: 50%;
+    left: var(--panel-w);
+    right: var(--panel-w);
+    /* 46vw term keeps this shrinking in step with --panel-h as the
+       viewport narrows (same reasoning as that var's own comment above)
+       instead of staying pinned near its dvh/650px cap while only the
+       WIDTH available to it shrinks — that would leave the item cluster
+       positioned for a wide-short box sitting in an increasingly
+       tall-narrow one instead, drifting from the mockup it was measured
+       against the more the screen narrows. */
+    height: min(calc(100dvh - var(--header-h)), 650px, 46vw);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  /* same "desk clutter" hover technique as start.component.scss's
+     &__decor — resting tilt is a per-item --rot custom property, hover
+     adds a fixed +10deg off THAT item's own resting angle (not a literal
+     target angle) and scales up slightly. pointer-events:none by default
+     so nothing here blocks taps on touch devices (there's no hover
+     there to trigger anyway), re-enabled only inside the
+     hover-capable-pointer media query. */
+  &__item {
+    position: absolute;
+    width: auto;
+    max-width: none;
+    display: block;
+    pointer-events: none;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.15));
+    transform: rotate(var(--rot, 0deg));
+    transition: transform 0.25s ease;
+
+    @media (hover: hover) and (pointer: fine) {
+      pointer-events: auto;
+      cursor: default;
+
+      &:hover {
+        transform: rotate(calc(var(--rot, 0deg) + 10deg)) scale(1.08);
+      }
+    }
+  }
+
+  /* left/top/width % below were measured off the desktop reference
+     mockup (b คำถาม2.png) against this stage's own box — see the
+     &__stage comment above for why that only holds up well on a
+     wide-short viewport close to the mockup's own proportions */
+  &__item--exam-paper {
+    left: 15%;
+    top: 3.9%;
+    width: 40%;
+    --rot: -2deg;
+  }
+
+  &__item--eraser {
+    left: 57.4%;
+    top: 19.1%;
+    width: 8.6%;
+    --rot: -8deg;
+  }
+
+  &__item--shirt {
+    left: 57%;
+    top: 30.3%;
+    width: 34%;
+    --rot: -2deg;
+  }
+
+  &__item--id-card {
+    left: 20%;
+    top: 62%;
+    width: 27%;
+    --rot: -7deg;
+  }
+
+  /* holds the absolute stage placement that used to live on &__private-btn
+     itself — the button is now just position:relative flow inside this,
+     so &__private-eye can sit at bottom:100% of THIS box (i.e. pinned to
+     the button's own top edge, floating above it) without being a DOM
+     child of the button */
+  &__private-content {
+    position: absolute;
+    right: 3%;
+    bottom: 8%;
+  }
+
+  &__private-eye {
+    position: absolute;
+    bottom: 100%;
+    right: 0%;
+    width: 30%;
+    margin-bottom: 15px;
+    pointer-events: none;
+  }
+
+  &__private-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    border: 1.5px solid var(--color-ink);
+    border-radius: 5px;
+    background: rgba(255, 253, 246, 0.8);
+    font-family: var(--font-display);
+    font-weight: 700;
+    /* clamp, same reasoning as &__name/&__description above — this was
+       the main thing forcing the button to wrap to two lines and swell
+       wide enough to collide with &__item on a narrow viewport */
+    font-size: clamp(11px, 3.2vw, 24px);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    color: var(--color-ink);
+    cursor: pointer;
+    pointer-events: auto;
+    transition:
+      transform 0.15s ease,
+      background-color 0.15s ease;
+
+    &:hover {
+      background: var(--color-cream);
+      transform: scale(1.05);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  /* same row as the shell's back/next nav buttons */
+  /* same on-screen spot regardless of &__modal (z-index:5) being open or
+     not — one checkbox, not two, per the reference mockup (a
+     คำถาม2.png): confirming while the modal's still up is the "kept it
+     private" answer, confirming after is the "revealed it" one (see
+     onConfirmChange). z-index above the modal's so it (and &__nav, see
+     question-shell's own scss) stay visible/reachable over its blur/dim
+     instead of being covered by it. */
+  &__confirm {
+    position: fixed;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    z-index: 6;
+  }
+
+  /* fixed (not absolute) so it always centers on the real viewport, not
+     &__privacy-reveal's own box — on mobile that box is auto-height and
+     can be much taller than one screen (its panels stack in normal flow
+     there, see question-shell's scss), so an absolute modal would center
+     itself somewhere in the middle of the full scrolled content instead
+     of wherever the user actually is. Header still paints above this
+     (z-index:20 vs this z-index:5) since it has its own opaque
+     background, so it reads the same as before on desktop too. */
+  &__modal {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(64, 54, 48, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  &__modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 0 24px;
+    text-align: center;
+  }
+
+  &__modal-icon {
+    width: 150px;
+  }
+
+  &__modal-label {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 25px;
+    letter-spacing: 0.04em;
+    color: white;
+  }
+
+  &__modal-post {
+    padding: 10px 30px;
+    border: 1.5px solid white;
+    border-radius: 10px;
+    background: transparent;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 35px;
+    letter-spacing: 0.06em;
+    color: white;
+    cursor: pointer;
+    transition:
+      transform 0.15s ease,
+      background-color 0.15s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(1.05);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}

@@ -42,6 +42,10 @@
   <app-question-outfit-picker class="question-shell__outfit-picker" [items]="config.items!"
     [initialTopId]="initialOutfitTopId" [initialBottomId]="initialOutfitBottomId" />
   }
+  @case ('privacy-reveal') {
+  <app-question-privacy-reveal class="question-shell__privacy-reveal"
+    [initialConfirmedVia]="initialPrivacyConfirmedVia" />
+  }
   @default {
   <p class="question-shell__prompt">{{ config.prompt }}</p>
   }

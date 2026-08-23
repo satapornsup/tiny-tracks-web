@@ -1,0 +1,92 @@
+<div class="privacy-reveal">
+  <img class="privacy-reveal__decor privacy-reveal__decor--a" src="assets/images/question/q2/decor-a.webp" alt=""
+    aria-hidden="true" />
+  <img class="privacy-reveal__decor privacy-reveal__decor--b" src="assets/images/question/q2/decor-b.webp" alt=""
+    aria-hidden="true" />
+  <img class="privacy-reveal__decor privacy-reveal__decor--c" src="assets/images/question/q2/decor-c.webp" alt=""
+    aria-hidden="true" />
+  <img class="privacy-reveal__decor privacy-reveal__decor--d" src="assets/images/question/q2/decor-c.webp" alt=""
+    aria-hidden="true" />
+
+  <div class="privacy-reveal__panel privacy-reveal__panel--left">
+    <div class="privacy-reveal__panel-wrap">
+      <img class="privacy-reveal__panel-bg" src="assets/images/question/q2/panel-texture-left.webp" alt=""
+        aria-hidden="true" />
+      <div class="privacy-reveal__panel-scroll pr-15!">
+        <img class="privacy-reveal__photo" src="assets/images/question/q2/photo-frame.webp" alt="รูปมู่ลี่" />
+        <div>
+          <p class="privacy-reveal__name">มู่ลี่</p>
+          <p class="privacy-reveal__description">เด็กหญิง มู่ลี่ ลีลาลัลล์</p>
+          <p class="privacy-reveal__description">เกิด 12 พฤศจิกายน พ.ศ. 2564 อายุ 5 ปี</p>
+          <p class="privacy-reveal__description">ศึกษาอยู่ชั้นอนุบาล 3</p>
+          <p class="privacy-reveal__description">โรงเรียน แอปเปิ้ล ห้องกุหลาบ</p>
+        </div>
+        <img class="privacy-reveal__photo-eye mt-4" src="assets/images/question/q2/eye-texture.webp" alt=""
+          aria-hidden="true" />
+      </div>
+    </div>
+  </div>
+
+  <div class="privacy-reveal__stage">
+    <img class="privacy-reveal__item privacy-reveal__item--exam-paper" src="assets/images/question/q2/exam-paper.webp"
+      alt="" aria-hidden="true" />
+    <img class="privacy-reveal__item privacy-reveal__item--eraser" src="assets/images/start/decor/eraser.webp" alt=""
+      aria-hidden="true" />
+    <img class="privacy-reveal__item privacy-reveal__item--shirt" src="assets/images/question/q2/shirt.webp" alt=""
+      aria-hidden="true" />
+    <img class="privacy-reveal__item privacy-reveal__item--id-card" src="assets/images/question/q2/id-card.webp" alt=""
+      aria-hidden="true" />
+
+    <div class="privacy-reveal__private-content">
+      <img class="privacy-reveal__private-eye" src="assets/images/question/q2/eye.webp" alt="" aria-hidden="true" />
+      <button class="privacy-reveal__private-btn" type="button" (click)="openModal()">
+        PRIVATE CONTENT
+      </button>
+    </div>
+  </div>
+
+  <div class="privacy-reveal__panel privacy-reveal__panel--right">
+    <div class="privacy-reveal__panel-wrap">
+      <img class="privacy-reveal__panel-bg" src="assets/images/question/q2/panel-texture-right.webp" alt=""
+        aria-hidden="true" />
+      <div class="privacy-reveal__panel-scroll pt-4! pl-15!">
+        <img class="privacy-reveal__photo-eye self-end" src="assets/images/question/q2/eye-texture.webp" alt=""
+          aria-hidden="true" />
+        <div>
+          <p class="privacy-reveal__name">มู่ลี่</p>
+          <p class="privacy-reveal__description">เด็กหญิง มู่ลี่ ลีลาลัลล์</p>
+          <p class="privacy-reveal__description">เกิด เวลา 12.07 นาที</p>
+          <p class="privacy-reveal__description">โรงพยาบาลสินแพทย์</p>
+          <p class="privacy-reveal__description">ที่อยู่ 027/12 หมู่บ้านลาดพร้าว 101 10232 กรุงเทพมหานคร</p>
+          <p class="privacy-reveal__description">ชอบสีชมพู ชอบกินขนม</p>
+          <p class="privacy-reveal__description">ไม่ชอบวิชาคณิตศาสตร์ สอบได้คะแนน 4/20</p>
+        </div>
+        <img class="privacy-reveal__math-card" src="assets/images/question/q2/math-exam-card.webp" alt=""
+          aria-hidden="true" />
+        <div>
+          <p class="privacy-reveal__description">ชอบวิชาศิลปะ เลิกเรียนเวลา 13.00 น.</p>
+          <p class="privacy-reveal__description">หลังเลิกเรียนชอบไปเล่นที่สวนในหมู่บ้าน เล่นกับพี่ ๆ ข้างบ้าน 2 คน ชื่อ
+            มะเหมี่ยว กับ มะม่วง
+            คุณพ่อจะไปรับกลับมาที่บ้านเพื่อกินอาหารเย็น</p>
+        </div>
+        <img class="privacy-reveal__pouch-inline" src="assets/images/question/q2/pouch.webp" alt=""
+          aria-hidden="true" />
+        <p class="privacy-reveal__description">จากนั้นจะดูการ์ตูน และทำการบ้าน ก่อนจะเข้านอน</p>
+      </div>
+    </div>
+  </div>
+
+  <app-confirm-checkbox class="privacy-reveal__confirm" [checked]="confirmed()"
+    (checkedChange)="onConfirmChange($event)" />
+
+  @if (modalOpen()) {
+  <div class="privacy-reveal__modal">
+    <div class="privacy-reveal__modal-content">
+      <img class="privacy-reveal__modal-icon" src="assets/images/question/q2/eye-slash.webp" alt=""
+        aria-hidden="true" />
+      <p class="privacy-reveal__modal-label">PRIVATE CONTENT</p>
+      <button class="privacy-reveal__modal-post" type="button" (click)="closeModal()">POST</button>
+    </div>
+  </div>
+  }
+</div>

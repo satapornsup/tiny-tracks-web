@@ -159,15 +159,25 @@
     }
   }
 
+  /* fills the whole main area — the component manages its own fixed side
+     panels/stage/modal internally, same as &__outfit-picker below */
+  &__privacy-reveal {
+    position: absolute;
+    inset: 0;
+  }
+
   /* same StickyNoteButtonComponent + same bottom-corner position as
      home__action on the Home page, for visual continuity between the
      two screens */
   &__nav {
     position: absolute;
     bottom: 20px;
-    /* above the outfit-picker's fixed full-height side panels (z-index:2)
-       which would otherwise cover these corner buttons entirely */
-    z-index: 3;
+    /* above both the outfit-picker's fixed full-height side panels
+       (z-index:2, which would otherwise cover these corner buttons
+       entirely) and privacy-reveal's own modal (z-index:5) — Back/Next
+       stay reachable and visible over that modal's blur/dim rather than
+       being covered by it, per the reference mockup (a คำถาม2.png) */
+    z-index: 6;
   }
 
   &__nav--back {
