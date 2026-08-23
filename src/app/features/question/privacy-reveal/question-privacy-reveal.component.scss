@@ -70,15 +70,15 @@
   }
 
   &__decor--c {
-    top: -35%;
-    right: 33%;
+    top: -39%;
+    right: 36%;
     width: 20%;
     max-width: none;
     --rot: 150deg;
   }
 
   &__decor--d {
-    bottom: -46%;
+    bottom: -48%;
     left: 33%;
     width: 20%;
     max-width: none;
@@ -279,21 +279,21 @@
      wide-short viewport close to the mockup's own proportions */
   &__item--exam-paper {
     left: 15%;
-    top: 3.9%;
-    width: 40%;
+    bottom: 45%;
+    width: 35%;
     --rot: -2deg;
   }
 
   &__item--eraser {
-    left: 57.4%;
-    top: 19.1%;
+    left: 53%;
+    bottom: 80%;
     width: 8.6%;
     --rot: -8deg;
   }
 
   &__item--shirt {
-    left: 57%;
-    top: 30.3%;
+    left: 52%;
+    top: 25%;
     width: 34%;
     --rot: -2deg;
   }
