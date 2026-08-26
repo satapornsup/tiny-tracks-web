@@ -81,13 +81,8 @@ export const QUESTIONS: readonly QuestionConfig[] = [
   },
   {
     id: 4,
-    interactionType: 'placeholder',
-    prompt: 'ปิดม่านตัวละคร (ยังไม่ได้สร้าง)',
-  },
-  {
-    id: 5,
     interactionType: 'outfit-picker',
-    prompt: 'แต่งตัวให้ลูกของคุณเพื่อไปถ่ายคลิปโปรโมทสินค้า',
+    prompt: 'สัญญาข้อที่ 4 แต่งตัวให้ลูกของคุณเพื่อไปถ่ายคลิปโปรโมทสินค้า',
     /* 4 tops × 4 bottoms, 2 of each correct (blouse/striped-bow tops,
        fur-shorts/striped-pants bottoms) — any correct-top + correct-bottom
        combo counts as correct, matching the 4 confirmed answer pairs.
@@ -153,6 +148,11 @@ export const QUESTIONS: readonly QuestionConfig[] = [
         isCorrect: false,
       },
     ],
+  },
+  {
+    id: 5,
+    interactionType: 'placeholder',
+    prompt: 'ปิดม่านตัวละคร (ยังไม่ได้สร้าง)',
   },
   {
     id: 6,
