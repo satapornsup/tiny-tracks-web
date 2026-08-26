@@ -7,6 +7,7 @@ import {
   QuizStateService,
 } from '../../shared/services/quiz-state.service';
 import { QuestionCurtainComponent } from './curtain/question-curtain.component';
+import { QuestionLiabilityWaiverComponent, WaiverItemId } from './liability-waiver/question-liability-waiver.component';
 import { QuestionOutfitPickerComponent } from './outfit-picker/question-outfit-picker.component';
 import { QuestionPrivacyRevealComponent } from './privacy-reveal/question-privacy-reveal.component';
 import { QUESTIONS } from './question-data';
@@ -25,6 +26,7 @@ import { QuestionWorkClockComponent } from './work-clock/question-work-clock.com
     QuestionPrivacyRevealComponent,
     QuestionWorkClockComponent,
     QuestionCurtainComponent,
+    QuestionLiabilityWaiverComponent,
   ],
   templateUrl: './question-shell.component.html',
   styleUrl: './question-shell.component.scss',
@@ -60,12 +62,15 @@ export class QuestionShellComponent {
     (this.previousAnswer?.value as Record<string, boolean> | undefined) ?? null;
   readonly initialCurtainClosed =
     (this.previousAnswer?.value as boolean | undefined) ?? null;
+  readonly initialWaiverAccepted =
+    (this.previousAnswer?.value as Record<WaiverItemId, boolean> | undefined) ?? null;
 
   private readonly swipeCard = viewChild(QuestionSwipeCardComponent);
   private readonly outfitPicker = viewChild(QuestionOutfitPickerComponent);
   private readonly privacyReveal = viewChild(QuestionPrivacyRevealComponent);
   private readonly workClock = viewChild(QuestionWorkClockComponent);
   private readonly curtain = viewChild(QuestionCurtainComponent);
+  private readonly liabilityWaiver = viewChild(QuestionLiabilityWaiverComponent);
 
   /** swipe-card and outfit-picker questions need an explicit confirm tick
    *  before Next unlocks (outfit-picker also needs both slots filled);
@@ -86,6 +91,9 @@ export class QuestionShellComponent {
     }
     if (this.config.interactionType === 'curtain') {
       return !this.curtain()?.confirmed();
+    }
+    if (this.config.interactionType === 'liability-waiver') {
+      return !this.liabilityWaiver()?.confirmed();
     }
     return false;
   });
@@ -129,6 +137,13 @@ export class QuestionShellComponent {
         this.questionId,
         curtain?.curtainClosed() ?? false,
         curtain?.isCorrect() ?? false,
+      );
+    } else if (this.config.interactionType === 'liability-waiver') {
+      const waiver = this.liabilityWaiver();
+      this.quizState.recordAnswer(
+        this.questionId,
+        waiver?.accepted() ?? null,
+        waiver?.isCorrect() ?? false,
       );
     } else {
       // stub questions (Q2/Q3/Q4/Q6 pending design) still need a

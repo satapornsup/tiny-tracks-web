@@ -176,6 +176,11 @@
     inset: 0;
   }
 
+  &__liability-waiver {
+    position: absolute;
+    inset: 0;
+  }
+
   /* same StickyNoteButtonComponent + same bottom-corner position as
      home__action on the Home page, for visual continuity between the
      two screens */

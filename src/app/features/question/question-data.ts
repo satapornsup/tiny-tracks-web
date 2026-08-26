@@ -156,7 +156,7 @@ export const QUESTIONS: readonly QuestionConfig[] = [
   },
   {
     id: 6,
-    interactionType: 'placeholder',
-    prompt: 'คำถามข้อ 6 (ยังไม่ได้ออกแบบ)',
+    interactionType: 'liability-waiver',
+    prompt: 'สัญญาข้อที่ 6 บริษัทไม่มีส่วนรับผิดชอบผลเสี่ยงที่จะเกิดขึ้น',
   },
 ] as const;

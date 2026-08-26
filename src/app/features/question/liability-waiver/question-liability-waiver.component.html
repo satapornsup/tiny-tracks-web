@@ -1,0 +1,115 @@
+<div class="liability-waiver">
+  <div class="liability-waiver__side liability-waiver__side--left">
+    <div class="liability-waiver__panel-wrap">
+      <img class="liability-waiver__panel-bg" src="assets/images/question/q2/panel-texture-left.webp" alt=""
+        aria-hidden="true" />
+      <div class="liability-waiver__side-edge" aria-hidden="true"></div>
+
+      <div class="liability-waiver__panel-content">
+        <div class="liability-waiver__side-note mt-5">
+          <img class="liability-waiver__asterisk" src="assets/images/question/q6/asterisk.webp" alt=""
+            aria-hidden="true" />
+          <p class="liability-waiver__side-text">การล่วงละเมิด ทางเพศ กลุ่มใคร่เด็กการลักพาตัว การสะกดรอยตาม... ..</p>
+        </div>
+
+        <div class="liability-waiver__side-gif">
+          <img src="assets/images/question/q6/fragile-teddy.gif" alt="" aria-hidden="true" />
+        </div>
+
+        <img class="liability-waiver__warning" src="assets/images/question/q6/warning-text.webp" alt=""
+          aria-hidden="true" />
+      </div>
+    </div>
+  </div>
+
+  <div class="liability-waiver__stage">
+    <div class="liability-waiver__card liability-waiver__card--bullied">
+      <img class="liability-waiver__card-img" src="assets/images/question/q6/bullied.webp" alt="" />
+      <div class="liability-waiver__card-footer">
+        <p class="liability-waiver__card-label">ถูกบูลลี่</p>
+        <button class="liability-waiver__accept ml-10" type="button" [attr.aria-pressed]="isAccepted('bullied')"
+          (click)="toggle('bullied')">
+          <span class="liability-waiver__accept-box"
+            [class.liability-waiver__accept-box--checked]="isAccepted('bullied')">
+            @if (isAccepted('bullied')) {
+            <svg class="liability-waiver__accept-check" viewBox="0 0 16 12" aria-hidden="true">
+              <path d="M1.5 6.5L5.5 10.5L14.5 1.5" fill="none" stroke="currentColor" stroke-width="2.4"
+                stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            }
+          </span>
+          <span class="liability-waiver__accept-label">ยอมรับ</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="liability-waiver__card liability-waiver__card--harassed">
+      <img class="liability-waiver__card-img" src="assets/images/question/q6/harassed.webp" alt="" />
+      <div class="liability-waiver__card-footer">
+        <p class="liability-waiver__card-label">ถูกล่วงละเมิด</p>
+        <button class="liability-waiver__accept" type="button" [attr.aria-pressed]="isAccepted('harassed')"
+          (click)="toggle('harassed')">
+          <span class="liability-waiver__accept-box"
+            [class.liability-waiver__accept-box--checked]="isAccepted('harassed')">
+            @if (isAccepted('harassed')) {
+            <svg class="liability-waiver__accept-check" viewBox="0 0 16 12" aria-hidden="true">
+              <path d="M1.5 6.5L5.5 10.5L14.5 1.5" fill="none" stroke="currentColor" stroke-width="2.4"
+                stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            }
+          </span>
+          <span class="liability-waiver__accept-label">ยอมรับ</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="liability-waiver__card liability-waiver__card--impersonated">
+      <img class="liability-waiver__card-img liability-waiver__card-img--photo"
+        src="assets/images/question/q6/impersonated-photo.webp" alt="" />
+      <div class="liability-waiver__card-footer">
+        <img class="liability-waiver__card-img liability-waiver__card-img--item"
+          src="assets/images/question/q6/impersonated-item.webp" alt="" />
+        <p class="liability-waiver__card-label">ถูกแอบอ้าง</p>
+        <button class="liability-waiver__accept" type="button" [attr.aria-pressed]="isAccepted('impersonated')"
+          (click)="toggle('impersonated')">
+          <span class="liability-waiver__accept-box"
+            [class.liability-waiver__accept-box--checked]="isAccepted('impersonated')">
+            @if (isAccepted('impersonated')) {
+            <svg class="liability-waiver__accept-check" viewBox="0 0 16 12" aria-hidden="true">
+              <path d="M1.5 6.5L5.5 10.5L14.5 1.5" fill="none" stroke="currentColor" stroke-width="2.4"
+                stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            }
+          </span>
+          <span class="liability-waiver__accept-label">ยอมรับ</span>
+        </button>
+      </div>
+    </div>
+
+    <app-confirm-checkbox class="liability-waiver__confirm" [checked]="confirmed()"
+      (checkedChange)="confirmed.set($event)" />
+  </div>
+
+  <div class="liability-waiver__side liability-waiver__side--right">
+    <div class="liability-waiver__panel-wrap">
+      <img class="liability-waiver__panel-bg" src="assets/images/question/q2/panel-texture-right.webp" alt=""
+        aria-hidden="true" />
+      <div class="liability-waiver__side-edge" aria-hidden="true"></div>
+
+      <div class="liability-waiver__panel-content">
+        <img class="liability-waiver__warning" src="assets/images/question/q6/warning-text.webp" alt=""
+          aria-hidden="true" />
+
+        <div class="liability-waiver__side-gif">
+          <img src="assets/images/question/q6/fragile-teddy.gif" alt="" aria-hidden="true" />
+        </div>
+
+        <div class="liability-waiver__side-note">
+          <img class="liability-waiver__asterisk self-end!" src="assets/images/question/q6/asterisk.webp" alt=""
+            aria-hidden="true" />
+          <p class="liability-waiver__side-text">ขโมยตัวตน ทางดิจิทัล ถูกกลั่นแกล้งในชีวิตจริงและ บนโลกออนไลน์</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

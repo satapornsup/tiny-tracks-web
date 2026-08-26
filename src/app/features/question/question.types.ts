@@ -6,6 +6,7 @@ export type QuestionInteractionType =
   | 'privacy-reveal'
   | 'work-clock'
   | 'curtain'
+  | 'liability-waiver'
   | 'placeholder';
 
 export interface SwipeCardOption {

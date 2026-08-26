@@ -53,6 +53,10 @@
   @case ('curtain') {
   <app-question-curtain class="question-shell__curtain" [initialClosed]="initialCurtainClosed" />
   }
+  @case ('liability-waiver') {
+  <app-question-liability-waiver class="question-shell__liability-waiver"
+    [initialAccepted]="initialWaiverAccepted" />
+  }
   @default {
   <p class="question-shell__prompt">{{ config.prompt }}</p>
   }
