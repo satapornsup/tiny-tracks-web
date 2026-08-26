@@ -1,25 +1,89 @@
 <app-header pageLabel="สรุปผล" />
 
 <main class="result">
-  <p class="result__title">สรุปผลคำตอบทั้ง 6 ข้อ</p>
+  <img class="result__margin-decor result__margin-decor--left" src="assets/images/home/decor/margin-cloud.svg" alt=""
+    aria-hidden="true" />
+  <img class="result__margin-decor result__margin-decor--right" src="assets/images/home/decor/margin-cloud.svg" alt=""
+    aria-hidden="true" />
 
-  <ul class="result__list">
-    @for (id of questionIds; track id) {
+  <div class="result__margin-text result__margin-text--left" aria-hidden="true">
+    <span>.. .</span>
+    <span>สัญญาจ้าง ... .</span>
+    <span>ไม่มี..</span>
+    <span>กำหนด.เวลา..</span>
+  </div>
+  <div class="result__margin-text result__margin-text--right" aria-hidden="true">
+    <span>เขียนที่ ... ... ...</span>
+    <span>วันที่ ... เดือน..</span>
+    <span>พ.ศ... .</span>
+    <span>.. .</span>
+  </div>
+
+  <div class="result__side result__side--left" aria-hidden="true"></div>
+  <div class="result__side result__side--right" aria-hidden="true"></div>
+
+  <div class="result__card">
+    <img class="result__card-bg" src="assets/images/result/folder-card.webp" alt="" aria-hidden="true" />
+
+    <div class="result__title">
+      @if (allCorrect()) {
+      <p class="result__title-line">
+        <span class="result__title-pill result__title-pill--green">ไม่มีความเสี่ยง</span>
+        <span class="result__title-badge result__title-badge--green">
+          <svg class="result__title-icon" viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M4 10.5L8 14.5L16 5.5" fill="none" stroke="white" stroke-width="2.6" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </span>
+      </p>
+      <p class="result__title-line">ละเมิดสิทธิ</p>
+      <p class="result__title-line">เด็ก</p>
+      } @else {
+      <p class="result__title-line">มีความเสี่ยง</p>
+      <p class="result__title-line">
+        <span class="result__title-pill result__title-pill--pink">ละเมิดสิทธิ</span>
+        <span class="result__title-badge result__title-badge--pink">
+          <svg class="result__title-icon" viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M5.5 5.5L14.5 14.5M14.5 5.5L5.5 14.5" fill="none" stroke="white" stroke-width="2.6"
+              stroke-linecap="round" />
+          </svg>
+        </span>
+      </p>
+      <p class="result__title-line">เด็ก</p>
+      }
+    </div>
+
+    <ul class="result__list">
+      @for (row of rows; track row.id) {
       <li class="result__row">
-        <span class="result__row-label">ข้อ {{ id }}</span>
-        @if (answerFor(id); as answer) {
-          <span class="result__row-status" [class.result__row-status--correct]="answer.isCorrect"
-            [class.result__row-status--wrong]="!answer.isCorrect">
-            {{ answer.isCorrect ? 'ถูก' : 'ผิด' }}
+        <span class="result__row-box">
+          <svg class="result__row-pill" viewBox="0 0 320 50" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="3" y="3" width="314" height="44" rx="8" fill="var(--color-cream)" stroke="var(--color-rust)"
+              stroke-width="1.8" stroke-dasharray="1 15" stroke-linecap="round" />
+          </svg>
+          <span class="result__row-content">
+            <strong class="result__row-num">ข้อ {{ row.id }}</strong>
+            <span class="result__row-label">{{ row.label }}</span>
           </span>
-        } @else {
-          <span class="result__row-status">ยังไม่ได้ตอบ</span>
-        }
+        </span>
+        <span class="result__row-swatch" [class.result__row-swatch--correct]="isCorrect(row.id)"></span>
       </li>
-    }
-  </ul>
+      }
+    </ul>
 
-  <app-sticky-note-button class="result__action" label="อ่านข้อควรปฏิบัติ" variant="green" iconPosition="after"
+    <div class="result__legend">
+      <p class="result__legend-item">
+        <span class="result__legend-swatch result__legend-swatch--correct"></span>
+        ไม่มีความเสี่ยงละเมิด
+      </p>
+      <p class="result__legend-item">
+        <span class="result__legend-swatch"></span>
+        มีความเสี่ยงละเมิด
+      </p>
+    </div>
+  </div>
+
+  <app-sticky-note-button class="result__action" label="อ่านข้อปฏิบัติ" variant="green" iconPosition="after"
     routerLink="/safety">
     <img src="assets/images/shared/icons/next.svg" alt="" aria-hidden="true" />
   </app-sticky-note-button>

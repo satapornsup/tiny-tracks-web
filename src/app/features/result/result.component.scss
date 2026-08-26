@@ -1,58 +1,449 @@
 .result {
   position: relative;
+  /* position:relative alone doesn't create a stacking context — without
+     this, the margin-decor's z-index:-1 escapes past .result entirely
+     (same reasoning as Home's own &__margin-decor, which this whole
+     background section is copied from) */
+  z-index: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 24px;
-  height: calc(100dvh - 72px);
-  padding: 40px 24px;
+  --header-h: 72px;
+  /* room the fixed &__action button (bottom:20px, ~56px tall) needs
+     below the card, so the two never overlap regardless of viewport */
+  --action-h: 96px;
+
+  height: calc(100dvh - var(--header-h));
+  overflow: hidden;
   background: var(--color-paper);
 
   @media (max-width: 640px) {
-    height: calc(100dvh - 56px);
+    --header-h: 56px;
+    --action-h: 84px;
+
+    height: calc(100dvh - var(--header-h));
   }
 
-  &__title {
-    margin: 0;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 24px;
-    color: var(--color-ink);
+  /* ---- background: copied verbatim from HomeComponent's own
+     &__margin-decor/&__margin-text/&__side (same asset, same technique)
+     so this page reads as "the same desk/paper world" as Home instead of
+     a plain page — see home.component.scss for the original comments
+     explaining each trick (the -31%/+31% self-relative offset, the
+     rotated footer.webp side strip, etc.) ---- */
+  &__margin-decor {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: auto;
+    aspect-ratio: 701.09 / 1020.62;
+    pointer-events: none;
+    z-index: -1;
+
+    @media (max-width: 640px) {
+      --decor-w: clamp(120px, 42vw, 520px);
+
+      top: 50%;
+      height: auto;
+      width: var(--decor-w);
+      aspect-ratio: auto;
+      transform: translateY(-50%);
+    }
   }
 
-  &__list {
+  &__margin-decor--left {
+    left: 0;
+    transform: translateX(-40%);
+
+    @media (max-width: 640px) {
+      left: calc(var(--decor-w) * -0.31);
+      transform: translateY(-50%);
+    }
+  }
+
+  &__margin-decor--right {
+    right: 0;
+    transform: translateX(40%) scaleX(-1);
+
+    @media (max-width: 640px) {
+      right: calc(var(--decor-w) * -0.31);
+      transform: translateY(-50%) scaleX(-1);
+    }
+  }
+
+  &__margin-text {
+    position: absolute;
+    z-index: -1;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: min(320px, 80vw);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--color-brand-green);
+    opacity: 0.55;
+    white-space: nowrap;
+    pointer-events: none;
+
+    @media (max-width: 640px) {
+      font-size: 10px;
+      gap: 6px;
+    }
+
+    span {
+      display: inline-block;
+      animation: result-margin-text-float 5s ease-in-out infinite;
+    }
+
+    span:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    span:nth-child(2) {
+      animation-delay: -1.3s;
+    }
+
+    span:nth-child(3) {
+      animation-delay: -2.6s;
+    }
+
+    span:nth-child(4) {
+      animation-delay: -3.9s;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      span {
+        animation: none;
+      }
+    }
+  }
+
+  &__margin-text--left {
+    left: 4%;
+    bottom: 12%;
+    align-items: flex-start;
+
+    span:nth-child(1) {
+      margin-left: 81px;
+    }
+
+    span:nth-child(2) {
+      margin-left: 0px;
+    }
+
+    span:nth-child(3) {
+      margin-left: 80px;
+    }
+
+    span:nth-child(4) {
+      margin-left: 82px;
+    }
+
+    @media (max-width: 640px) {
+      bottom: 25%;
+    }
+  }
+
+  &__margin-text--right {
+    right: 4%;
+    top: 5%;
+    align-items: flex-end;
+    text-align: right;
+
+    span:nth-child(2) {
+      margin-right: 75px;
+    }
+
+    span:nth-child(3) {
+      margin-right: 8px;
+    }
+
+    span:nth-child(4) {
+      margin-right: 55px;
+    }
+
+    @media (max-width: 640px) {
+      top: 20%;
+    }
+  }
+
+  &__side {
+    --side-w: 35px;
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: var(--side-w);
+    overflow: hidden;
+    pointer-events: none;
+
+    @media (max-width: 640px) {
+      --side-w: 16px;
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3000px;
+      height: var(--side-w);
+      background-image: url("/assets/images/start/footer.webp");
+      background-repeat: repeat-x;
+      background-position: top left;
+      background-size: auto 100%;
+      transform-origin: top left;
+      transform: translate(var(--side-w), 0) rotate(90deg);
+    }
+  }
+
+  &__side--left {
+    left: 0;
+  }
+
+  &__side--right {
+    right: 0;
+    transform: scaleX(-1);
+  }
+
+  /* ---- the folder card itself (สรุปผล.webp) — everything below is new
+     to this page, not copied from Home ---- */
+
+  /* aspect-ratio locked to the art's own real size (2400×1632, same
+     4335:2946 ratio as the source file) so every %-positioned overlay
+     below always lands on the same spot in the artwork regardless of
+     viewport — same "wrapper matches the image's native ratio exactly"
+     technique as every other question's own panel/stage element.
+     Width is capped a 3rd way, derived from the AVAILABLE height minus
+     --action-h — without this the card could grow tall enough (on a
+     short/wide viewport) to sit right under the fixed &__action button
+     and overlap it, since width:min(860px,90vw) alone never accounts
+     for how much vertical room is actually left. */
+  &__card {
+    position: relative;
+    z-index: 1;
+    width: min(760px, 88vw, calc((100dvh - var(--header-h) - var(--action-h)) * 2400 / 1632));
+    aspect-ratio: 2400 / 1632;
+  }
+
+  &__card-bg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    pointer-events: none;
+  }
+
+  /* positions below are all measured directly off the reference mockups
+     (aสรุปผล-03/06.png) as a percentage of the folder card's own
+     rendered box — re-derive them (crop the mockup to the card's own
+     bounding box, measure in %) if the card art or its layout changes */
+  &__title {
+    position: absolute;
+    left: 12%;
+    top: 10%;
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    gap: 2%;
+  }
+
+  &__title-line {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(14px, 2.6vw, 30px);
+    line-height: 1.15;
+    color: var(--color-ink);
+  }
+
+  /* the ONE highlighted phrase per state — "ละเมิดสิทธิ" (pink, wrong)
+     or "ไม่มีความเสี่ยง" (green, all-correct) — everything else in the
+     title stays plain black text, matching the mockup exactly (it's not
+     a simple color swap of the same phrase, the two mockups highlight
+     DIFFERENT phrases, see isCorrect()/allCorrect() in the .ts) */
+  &__title-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.05em 0.1em;
+    color: white;
+  }
+
+  &__title-pill--pink {
+    background: var(--color-brand-pink);
+  }
+
+  &__title-pill--green {
+    background: var(--color-brand-green);
+  }
+
+  /* the check/✕ icon is its OWN circular badge, separate from the pill
+     above (a small gap between them) — NOT appended inside the pill's
+     own rounded-rect background, which is what made it look fused into
+     one shape */
+  &__title-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    height: 1em;
+    margin-left: 0.3em;
+    border-radius: 50%;
+    vertical-align: middle;
+  }
+
+  &__title-badge--pink {
+    background: var(--color-brand-pink);
+  }
+
+  &__title-badge--green {
+    background: var(--color-brand-green);
+  }
+
+  &__title-icon {
+    width: 0.8em;
+    height: 0.8em;
+    flex-shrink: 0;
+  }
+
+  &__list {
+    position: absolute;
+    left: 40%;
+    top: 20%;
+    width: 52%;
+    height: 62%;
     margin: 0;
     padding: 0;
     list-style: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 
   &__row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 10px 16px;
-    border: 2px dashed var(--color-rust);
-    border-radius: 12px;
-    background: var(--color-cream);
+    gap: 3%;
+  }
+
+  /* same round-dot-dash SVG pill technique as this app's actual buttons
+     (sticky-note-button, confirm-checkbox) — NOT a plain CSS `border:
+     dashed` (that draws rectangular dashes, visibly off-brand, already
+     flagged once this session on the curtain cord's tooltip). The
+     viewBox (320×50) is deliberately the same aspect ratio as this row
+     is ever rendered at (aspect-ratio below), so the SVG scales
+     uniformly with zero letterboxing/distortion regardless of viewport —
+     same reasoning as every other fixed-aspect dashed pill in this app. */
+  &__row-box {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    aspect-ratio: 320 / 50;
+    display: flex;
+    align-items: center;
+  }
+
+  &__row-pill {
+    position: absolute;
+    inset: 0;
+    width: fit-content;
+    height: 100%;
+    display: block;
+  }
+
+  &__row-content {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    min-width: 0;
+    padding: 0 6%;
     font-family: var(--font-display);
-    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__row-num {
+    flex-shrink: 0;
+    font-weight: 700;
+    font-size: clamp(22px, 1.5vw, 18px);
     color: var(--color-ink);
   }
 
-  &__row-status {
-    font-weight: 700;
+  &__row-label {
+    font-weight: 600;
+    font-size: clamp(20px, 1.35vw, 16px);
+    color: var(--color-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__row-swatch {
+    flex-shrink: 0;
+    width: 10%;
+    aspect-ratio: 1;
+    border-radius: 10%;
+    background: var(--color-brand-pink);
 
     &--correct {
-      color: var(--color-brand-green);
+      background: var(--color-brand-green);
     }
+  }
 
-    &--wrong {
-      color: var(--color-brand-pink);
+  &__legend {
+    position: absolute;
+    left: 12%;
+    top: 75%;
+    width: 32%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+  }
+
+  &__legend-item {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(18px, 1.3vw, 15px);
+    color: var(--color-ink);
+    white-space: nowrap;
+  }
+
+  &__legend-swatch {
+    flex-shrink: 0;
+    width: 1.3em;
+    height: 1.3em;
+    background: var(--color-brand-pink);
+
+    &--correct {
+      background: var(--color-brand-green);
     }
+  }
+
+  /* single centered action button (unlike Home's own left/right pair) —
+     matches the mockup's one "อ่านข้อปฏิบัติ" button centered under the
+     card */
+  &__action {
+    position: absolute;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    z-index: 1;
+  }
+}
+
+@keyframes result-margin-text-float {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: translateY(-5px);
+    opacity: 1;
   }
 }
