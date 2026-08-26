@@ -45,8 +45,10 @@
     /* tracks the wardrobe panel's own height formula exactly (capped at
        1000px/54vw) instead of always filling the viewport — so the cloud
        shrinks together with the wardrobe instead of staying huge behind
-       a much-shorter capped panel on a tall screen */
-    height: var(--panel-h);
+       a much-shorter capped panel on a tall screen. 85% (not the full
+       100%) so the cloud reads as a smaller decorative accent behind the
+       panel rather than matching its height exactly. */
+    height: calc(var(--panel-h) * 0.85);
     width: auto;
     aspect-ratio: 701.09 / 1020.62;
     opacity: 0.6;
@@ -55,12 +57,12 @@
   }
 
   &__margin-decor--left {
-    left: 0;
+    left: 15%;
     transform: translateY(-50%);
   }
 
   &__margin-decor--right {
-    right: 0;
+    right: 15%;
     transform: translateY(-50%) scaleX(-1);
   }
 
@@ -182,14 +184,10 @@
     max-width: 100%;
     aspect-ratio: 1;
     padding: 4px;
-    border: 2.5px solid transparent;
-    border-radius: 10px;
+    border: none;
     background: transparent;
     cursor: pointer;
-    transition:
-      border-color 0.15s ease,
-      background-color 0.15s ease,
-      transform 0.15s ease;
+    transition: transform 0.15s ease;
 
     img {
       width: 100%;
@@ -197,16 +195,62 @@
       object-fit: contain;
       display: block;
       filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25));
+      /* scaled up past the slot's own box (not the slot itself, so the
+         clickable hitbox/border/spacing between items stays put) — the
+         garment art's own hanger tabs already eat into its object-fit box
+         (see the &__equipped comment above), so this just fills that
+         same box more, no overflow:hidden anywhere to clip it against */
+      transform: scale(1.7);
     }
 
     &:hover {
       transform: scale(1.5);
     }
+  }
 
-    &--selected {
-      border-color: var(--color-brand-green);
-      background: color-mix(in srgb, var(--color-cream) 55%, transparent);
+  /* a square border+background (tried first) sat at the BUTTON's own
+     unscaled size while the garment img inside is scale(1.7) — the
+     garment visibly overflowed that frame, reading as "not contained".
+     A green glow via drop-shadow (tried next) hugs the garment's real
+     silhouette so it always fits, but looked muddy/unclear against the
+     busy garment art itself. A small checkmark badge sidesteps the
+     size-mismatch question entirely — it doesn't need to size to
+     anything, just sit in a fixed corner of the (unscaled) button.
+     NOT nested inside &__item above — `&` in this file always resolves
+     off the top-level .outfit-picker, so a nested `&__check` there would
+     have compiled to .outfit-picker__item__check, not .outfit-picker__check
+     (matches every other &__xxx in this file being a flat top-level rule,
+     not nested BEM). */
+  &__check {
+    position: absolute;
+    bottom: 10px;
+    right: -2px;
+    width: 35%;
+    aspect-ratio: 1;
+    min-width: 25px;
+    min-height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--color-brand-green);
+    border: 2px solid var(--color-cream);
+    opacity: 0;
+    transform: scale(0.5);
+    transition:
+      opacity 0.15s ease,
+      transform 0.15s ease;
+    z-index: 1;
+
+    svg {
+      width: 55%;
+      height: 55%;
     }
+  }
+
+  &__item--selected &__check {
+    opacity: 1;
+    transform: scale(1);
   }
 
   /* aspect-ratio locked to the character-frame art's native size so the

@@ -13,6 +13,12 @@
           [class.outfit-picker__item--selected]="item.id === selectedTopId() || item.id === selectedBottomId()"
           type="button" (click)="select(item)">
           <img [src]="item.image" alt="" />
+          <span class="outfit-picker__check">
+            <svg viewBox="0 0 16 12" aria-hidden="true">
+              <path d="M1.5 6.5L5.5 10.5L14.5 1.5" fill="none" stroke="white" stroke-width="2.4"
+                stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
         </button>
         }
       </div>
@@ -43,6 +49,12 @@
           [class.outfit-picker__item--selected]="item.id === selectedTopId() || item.id === selectedBottomId()"
           type="button" (click)="select(item)">
           <img [src]="item.image" alt="" />
+          <span class="outfit-picker__check">
+            <svg viewBox="0 0 16 12" aria-hidden="true">
+              <path d="M1.5 6.5L5.5 10.5L14.5 1.5" fill="none" stroke="white" stroke-width="2.4"
+                stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
         </button>
         }
       </div>
