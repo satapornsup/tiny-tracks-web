@@ -50,6 +50,9 @@
   <app-question-work-clock class="question-shell__work-clock" [offers]="config.workOffers!"
     [initialToggles]="initialWorkToggles" />
   }
+  @case ('curtain') {
+  <app-question-curtain class="question-shell__curtain" [initialClosed]="initialCurtainClosed" />
+  }
   @default {
   <p class="question-shell__prompt">{{ config.prompt }}</p>
   }

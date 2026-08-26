@@ -1,0 +1,53 @@
+<div class="curtain" (pointermove)="onStagePointerMove($event)">
+  @for (face of faces; track face.id) {
+  <div class="curtain__face" [class]="'curtain__face--' + face.position">
+    <img class="curtain__face-img" [src]="face.faceImg" alt="" aria-hidden="true" />
+    @for (eye of face.eyes; track eye.socketImg; let eyeI = $index) {
+    <div class="curtain__eye" #eyeSocket [style.top]="eye.top" [style.left]="eye.left" [style.width]="eye.width">
+      <img class="curtain__eye-socket" [src]="eye.socketImg" alt="" aria-hidden="true" />
+      <img class="curtain__eye-pupil" [style.top]="eye.eyePupil.top" [style.left]="eye.eyePupil.left"
+        [style.width]="eye.eyePupil.width" src="assets/images/question/curtain/eye-pupil.svg" alt="" aria-hidden="true"
+        [style.transform]="pupilTransform(face.eyeStartIndex + eyeI)" />
+    </div>
+    }
+  </div>
+  }
+
+  <img class="curtain__face-filler curtain__face-filler--1" src="assets/images/question/curtain/face-a.webp" alt=""
+    aria-hidden="true" />
+  <img class="curtain__face-filler curtain__face-filler--2" src="assets/images/question/curtain/face-a.webp" alt=""
+    aria-hidden="true" />
+
+  <p class="curtain__comment curtain__comment--1">"น้องมู่ กินเยอะ ๆ"</p>
+  <p class="curtain__comment curtain__comment--2">"โดนตกแล้วว"</p>
+  <p class="curtain__comment curtain__comment--3">"น่ารักจัง"</p>
+  <p class="curtain__comment curtain__comment--4">"แก้มอ้วนนน น้องมูลี่"</p>
+
+  <div class="curtain__stage">
+    <img class="curtain__table" src="assets/images/question/curtain/table.webp" alt="" aria-hidden="true" />
+    <img class="curtain__bowl" src="assets/images/question/curtain/bowl.webp" alt="" aria-hidden="true" />
+    <div #character class="curtain__character" [class.curtain__character--dragging]="dragging()"
+      [style.transform]="'translate(' + characterOffset().x + 'px, ' + characterOffset().y + 'px)'"
+      (pointerdown)="onCharacterPointerDown($event)">
+      <img class="curtain__character-img" src="assets/images/question/curtain/character.webp" alt="" aria-hidden="true" />
+    </div>
+  </div>
+
+  <div class="curtain__blinds" [class.curtain__blinds--closed]="curtainClosed()">
+    <div class="curtain__blinds-slats"></div>
+  </div>
+  <button class="curtain__cord" type="button" [class.curtain__cord--closed]="curtainClosed()"
+    (click)="toggleCurtain()" [attr.aria-label]="curtainClosed() ? 'เปิดม่าน' : 'ปิดม่าน'">
+    <span class="curtain__cord-tooltip">
+      <svg class="curtain__cord-tooltip-pill" viewBox="0 0 130 44" xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true">
+        <rect x="3" y="3" width="122" height="38" rx="19" fill="var(--color-cream)" stroke="var(--color-rust)"
+          stroke-width="1.8" stroke-dasharray="1 15" stroke-linecap="round" />
+      </svg>
+      <span class="curtain__cord-tooltip-label">{{ curtainClosed() ? 'เปิดม่าน' : 'ปิดม่าน' }}</span>
+    </span>
+    <img src="assets/images/question/curtain/cord.webp" alt="" aria-hidden="true" />
+  </button>
+
+  <app-confirm-checkbox class="curtain__confirm" [checked]="confirmed()" (checkedChange)="confirmed.set($event)" />
+</div>

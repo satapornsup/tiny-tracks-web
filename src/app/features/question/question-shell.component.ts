@@ -6,6 +6,7 @@ import {
   QuestionId,
   QuizStateService,
 } from '../../shared/services/quiz-state.service';
+import { QuestionCurtainComponent } from './curtain/question-curtain.component';
 import { QuestionOutfitPickerComponent } from './outfit-picker/question-outfit-picker.component';
 import { QuestionPrivacyRevealComponent } from './privacy-reveal/question-privacy-reveal.component';
 import { QUESTIONS } from './question-data';
@@ -23,6 +24,7 @@ import { QuestionWorkClockComponent } from './work-clock/question-work-clock.com
     QuestionOutfitPickerComponent,
     QuestionPrivacyRevealComponent,
     QuestionWorkClockComponent,
+    QuestionCurtainComponent,
   ],
   templateUrl: './question-shell.component.html',
   styleUrl: './question-shell.component.scss',
@@ -56,11 +58,14 @@ export class QuestionShellComponent {
     (this.previousAnswer?.value as PrivacyConfirmSource | undefined) ?? null;
   readonly initialWorkToggles =
     (this.previousAnswer?.value as Record<string, boolean> | undefined) ?? null;
+  readonly initialCurtainClosed =
+    (this.previousAnswer?.value as boolean | undefined) ?? null;
 
   private readonly swipeCard = viewChild(QuestionSwipeCardComponent);
   private readonly outfitPicker = viewChild(QuestionOutfitPickerComponent);
   private readonly privacyReveal = viewChild(QuestionPrivacyRevealComponent);
   private readonly workClock = viewChild(QuestionWorkClockComponent);
+  private readonly curtain = viewChild(QuestionCurtainComponent);
 
   /** swipe-card and outfit-picker questions need an explicit confirm tick
    *  before Next unlocks (outfit-picker also needs both slots filled);
@@ -78,6 +83,9 @@ export class QuestionShellComponent {
     }
     if (this.config.interactionType === 'work-clock') {
       return !this.workClock()?.confirmed();
+    }
+    if (this.config.interactionType === 'curtain') {
+      return !this.curtain()?.confirmed();
     }
     return false;
   });
@@ -114,6 +122,13 @@ export class QuestionShellComponent {
         this.questionId,
         clock?.toggles() ?? null,
         clock?.isCorrect() ?? false,
+      );
+    } else if (this.config.interactionType === 'curtain') {
+      const curtain = this.curtain();
+      this.quizState.recordAnswer(
+        this.questionId,
+        curtain?.curtainClosed() ?? false,
+        curtain?.isCorrect() ?? false,
       );
     } else {
       // stub questions (Q2/Q3/Q4/Q6 pending design) still need a

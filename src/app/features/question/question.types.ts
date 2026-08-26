@@ -1,6 +1,12 @@
 import { QuestionId } from '../../shared/services/quiz-state.service';
 
-export type QuestionInteractionType = 'swipe-card' | 'outfit-picker' | 'privacy-reveal' | 'work-clock' | 'placeholder';
+export type QuestionInteractionType =
+  | 'swipe-card'
+  | 'outfit-picker'
+  | 'privacy-reveal'
+  | 'work-clock'
+  | 'curtain'
+  | 'placeholder';
 
 export interface SwipeCardOption {
   id: string;

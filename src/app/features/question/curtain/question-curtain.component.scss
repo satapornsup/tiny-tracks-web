@@ -1,0 +1,465 @@
+.curtain {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  --header-h: 72px;
+  /* the mid face's own width — left/right derive theirs FROM this (see
+     &__face--left/right below) so all 3 always sum to exactly 100vw with
+     zero gap between them, instead of 3 independently-clamped widths
+     that left visible dead space between the faces at most viewport
+     sizes (each was sized in isolation, with nothing tying them to the
+     screen width as a group). Raised from clamp(260px,34vw,480px) — that
+     was sized to roughly HALF the screen's height once rendered (its own
+     aspect ratio follows from width), nowhere near the reference's much
+     taller faces. */
+  --face-mid-w: clamp(520px, 52vw, 760px);
+  /* how far past the true screen edge the two profile faces' art bleeds
+     — face-tilt-left/right.webp are asymmetric single-head art (not
+     pre-cropped in half), so flush left:0/right:0 alone rendered the
+     whole head at a narrow width and looked small/"cut in half" next to
+     the much-taller mid face. Widening them by this amount while
+     shifting left by the SAME amount (see &__face--left/right) grows the
+     rendered art without moving where it meets the mid face — the extra
+     width/height just bleeds past the true edge instead of shrinking
+     the visible slot. */
+  --face-bleed: 30vw;
+
+  @media (max-width: 640px) {
+    --header-h: 56px;
+  }
+
+  /* 3 peeking faces (the front-facing one is ONE head with both its own
+     eyes, not two side-by-side heads — see FaceConfig comment in the
+     .ts), pinned to the true screen edges (same technique as work-clock's
+     &__corner) — decorative background only, hidden below 900px since
+     there's no spare width for them there */
+  &__face {
+    position: fixed;
+    top: calc(var(--header-h) + 1%);
+    z-index: 1;
+    pointer-events: none;
+
+    @media (max-width: 900px) {
+      display: none;
+    }
+  }
+
+  /* the VISIBLE slot still exactly fills whatever's left of the screen
+     width after the mid face, split evenly — but the rendered width adds
+     --face-bleed on top, shifted the same amount past the edge (see
+     left/right below), so the image is bigger/taller than its visible
+     slot alone would allow while the edge touching the mid face doesn't
+     move — no gap, no overlap, and the art's far/cropped side bleeds
+     off past the true screen edge instead of being visible mid-frame */
+  &__face--left,
+  &__face--right {
+    width: calc((100vw - var(--face-mid-w)) / 2 + var(--face-bleed));
+  }
+
+  &__face--left {
+    left: calc(-1.1 * var(--face-bleed));
+  }
+
+  &__face--right {
+    right: calc(-1.1 * var(--face-bleed));
+  }
+
+  /* wider than the two profile faces since it has to fit 2 full eyes
+     side by side, not crop past one */
+  &__face--mid {
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--face-mid-w);
+  }
+
+  &__face-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: none;
+  }
+
+  /* top/left come from EyeConfig (per-eye, set inline in the template) —
+     pupil's own travel radius is computed off THIS box's rendered size
+     (see measureEyeCenters in the .ts), positions eyeballed against the
+     reference mockup, not pixel-measured off the face art */
+  &__eye {
+    position: absolute;
+    aspect-ratio: 1;
+  }
+
+  &__eye-socket {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    max-width: none;
+  }
+
+  &__eye-pupil {
+    position: absolute;
+    height: auto;
+    max-width: none;
+    pointer-events: none;
+  }
+
+  /* fills the seam between the left/mid and mid/right faces — static
+     (no eyes, not in the &__face grid, doesn't participate in eye
+     tracking) since it's purely there to make the crowd read as denser,
+     not another face to track individually. Sits BEHIND the main 3
+     faces (z-index 0 vs 1) and dimmed, so it doesn't compete with them
+     or look like a 4th/5th equally-important peeker. Positioned at the
+     midpoint of the left/right face's own visible slot — half of
+     (100vw - mid)/2, i.e. a quarter of the leftover width on each side. */
+  &__face-filler {
+    position: fixed;
+    top: calc(var(--header-h) + 4%);
+    width: clamp(620px, 18vw, 260px);
+    z-index: 0;
+    opacity: 0.7;
+    pointer-events: none;
+    max-width: none;
+
+    @media (max-width: 900px) {
+      display: none;
+    }
+  }
+
+  &__face-filler--1 {
+    left: calc((160vw - var(--face-mid-w)) / 4);
+    transform: translateX(-50%);
+  }
+
+  &__face-filler--2 {
+    right: calc((160vw - var(--face-mid-w)) / 4);
+    transform: translateX(50%);
+  }
+
+  /* fades in/out on an 8s loop (see keyframes at file end) instead of
+     sitting on screen the whole time — each of the 4 gets its OWN slice
+     of that loop via animation-delay below, so they take turns "talking"
+     rather than all 4 sitting there frozen and simultaneous the whole
+     time. opacity:0 base state matters here (not just the keyframe's own
+     0%) so there's no flash-of-full-opacity in the instant before the
+     animation engine picks up the delay. */
+  &__comment {
+    position: fixed;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(15px, 1.6vw, 25px);
+    color: var(--color-brand-pink);
+    z-index: 2;
+    pointer-events: none;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+    opacity: 0;
+    animation: curtain-comment-speak 6s ease-in-out infinite;
+
+    @media (max-width: 900px) {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__comment {
+      animation: none;
+      opacity: 1;
+    }
+  }
+
+  &__comment--1 {
+    bottom: 15%;
+    left: 10%;
+    animation-delay: 0s;
+  }
+
+  &__comment--2 {
+    bottom: 25%;
+    left: 27%;
+    animation-delay: 1s;
+  }
+
+  &__comment--3 {
+    bottom: 25%;
+    right: 27%;
+    animation-delay: 2s;
+  }
+
+  &__comment--4 {
+    bottom: 15%;
+    right: 10%;
+    animation-delay: 3s;
+  }
+
+  /* the blind only covers the "window" — the faces peeking in from
+     outside it — not the room itself, so the desk scene sits ABOVE the
+     blinds (z-index 4 vs 3) and stays fully visible no matter what the
+     curtain's doing. bottom is lifted off the true edge (not 0) so the
+     character has clearance above the fixed confirm checkbox instead of
+     visually overlapping it. */
+  &__stage {
+    position: absolute;
+    bottom: 0%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(55vw, 460px);
+    z-index: 4;
+  }
+
+  &__table {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: none;
+    pointer-events: none;
+  }
+
+  &__bowl {
+    position: absolute;
+    bottom: 43%;
+    left: 63%;
+    width: 16%;
+    height: auto;
+    max-width: none;
+    pointer-events: none;
+  }
+
+  /* draggable — released anywhere it springs back to (0,0) via GSAP (see
+     onDocPointerUp in the .ts), never actually leaving its seat for
+     good. touch-action:none stops the browser's own scroll/zoom gestures
+     from fighting the pointer drag on touch devices. this wrapper only
+     ever gets the drag [style.transform] (translate) — the idle wiggle's
+     own transform (rotate, see &__character-img below) lives on the
+     CHILD img instead, since a CSS animation targeting `transform` wins
+     the cascade over a plain inline style on the same element, which
+     would have fought the drag position every single frame */
+  &__character {
+    position: absolute;
+    bottom: 60%;
+    left: 27%;
+    width: 46%;
+    transform-origin: bottom center;
+    cursor: grab;
+    touch-action: none;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  /* subtle idle loop so the character reads as "playable" without any
+     text/tooltip — a small rotate oscillation, paused the instant a drag
+     starts (see &__character--dragging below) so it doesn't fight or
+     look glitchy underneath an actively-moving hand */
+  &__character-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: none;
+    transform-origin: bottom center;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+    animation: curtain-character-wiggle 2.6s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__character-img {
+      animation: none;
+    }
+  }
+
+  /* &__character--dragging &__character-img (not nested inside
+     &__character-img above) — this file's `&` always resolves off the
+     top-level .curtain, so nesting would've compiled to the wrong
+     selector (same &-scoping trap already caught in &__cord's tooltip
+     rule above) */
+  &__character--dragging &__character-img {
+    animation-play-state: paused;
+  }
+
+  /* height (not scaleY) animates open→closed so the repeated slat
+     pattern inside never stretches/distorts — only how much of it is
+     visible changes, the same way a real blind's slats stay a fixed
+     size while more of them come into view as it lowers */
+  &__blinds {
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    right: 0;
+    /* needs to clear at least one full slat's own height (clamp(28px,
+       3.6vw,56px) below) to actually show a slat — 6% (tried first) came
+       out to ~43px on a typical desktop viewport, shorter than one slat,
+       so nothing ever rendered even though the element/asset were both
+       correctly in place */
+    height: 12%;
+    overflow: hidden;
+    z-index: 3;
+    pointer-events: none;
+    transition: height 0.8s cubic-bezier(0.34, 1.2, 0.64, 1);
+  }
+
+  &__blinds--closed {
+    height: 76%;
+  }
+
+  &__blinds-slats {
+    position: absolute;
+    inset: 0;
+    background-image: url("/assets/images/question/curtain/blind-slat.webp");
+    background-repeat: repeat-y;
+    background-size: 100% clamp(28px, 3.6vw, 56px);
+  }
+
+  /* fixed near the top-right regardless of curtain state — matches the
+     reference art where the cord hangs from the (stationary) headrail,
+     not from the moving blind edge */
+  &__cord {
+    position: fixed;
+    top: 16%;
+    right: 4.8%;
+    width: clamp(36px, 4vw, 64px);
+    z-index: 2;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    /* top gets its own transition (separate from transform, which
+       :hover/:active already use for the press feedback) so it can slide
+       down in step with the blinds' own 0.8s close animation instead of
+       jumping instantly while the curtain is still visibly lowering */
+    transition:
+      transform 0.15s ease,
+      top 0.8s cubic-bezier(0.34, 1.2, 0.64, 1);
+
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+      max-width: none;
+    }
+
+    &:hover {
+      transform: scale(1.3);
+    }
+
+    &:active {
+      transform: scale(0.94);
+    }
+  }
+
+  /* follows the blinds down as they close (&__blinds--closed reaches
+     76% height) so the cord still reads as hanging from a reachable
+     point on the lowered curtain instead of floating up near the header
+     while the curtain itself is already most of the way down */
+  &__cord--closed {
+    top: 75%;
+  }
+
+  /* same dashed-pill DNA as the rest of this app's buttons (sticky-note-
+     button, confirm-checkbox) rather than a plain OS tooltip — reads the
+     ACTION a click will take ("ปิดม่าน"/"เปิดม่าน" set in the template
+     off curtainClosed()), not the current state, matching how a real
+     toggle button label works. Sits to the LEFT of the cord (which is
+     pinned near the right screen edge) so it never gets clipped off-
+     screen; &__cord is already position:fixed, so it's the containing
+     block for this without needing its own extra position:relative. */
+  /* fixed width/aspect-ratio (not padding-driven auto sizing) so the
+     SVG's viewBox below can match it exactly — a mismatched viewBox
+     aspect ratio is what made work-clock's switch pill letterbox into a
+     narrower-than-intended shape earlier this project, same risk here */
+  &__cord-tooltip {
+    position: absolute;
+    top: 50%;
+    right: calc(100% + 10px);
+    transform: translateY(-50%) translateX(6px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(96px, 9vw, 132px);
+    aspect-ratio: 130 / 44;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.15s ease,
+      transform 0.15s ease;
+    z-index: 10;
+  }
+
+  &__cord-tooltip-pill {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  &__cord-tooltip-label {
+    position: relative;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(15px, 1.3vw, 16px);
+    color: var(--color-ink);
+    white-space: nowrap;
+  }
+
+  /* &__cord:hover (not &:hover) — this file's `&` always resolves off
+     the top-level .curtain, so nesting this inside &__cord above would
+     have compiled to .curtain:hover, not .curtain__cord:hover (the same
+     mistake already caught once in outfit-picker's &__check) */
+  &__cord:hover &__cord-tooltip,
+  &__cord:focus-visible &__cord-tooltip {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+
+  &__confirm {
+    position: fixed;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    z-index: 6;
+  }
+}
+
+/* 8s loop, 4 comments each taking a 2s-delayed slice of it (see
+   &__comment--1/2/3/4 above) — silent/invisible most of the loop, then a
+   quick fade up, a beat of visible float (like a little emphasis wiggle
+   mid-sentence), and a fade back down before the next one's turn */
+@keyframes curtain-comment-speak {
+  0%,
+  42%,
+  100% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  10%,
+  32% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  21% {
+    transform: translateY(-3px);
+  }
+}
+
+/* small rotate-only oscillation (see &__character-img above) — bottom-
+   center transform-origin makes it read as a gentle sway on its feet
+   rather than spinning around its own middle */
+@keyframes curtain-character-wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-2.5deg);
+  }
+
+  75% {
+    transform: rotate(2.5deg);
+  }
+}

@@ -151,8 +151,8 @@ export const QUESTIONS: readonly QuestionConfig[] = [
   },
   {
     id: 5,
-    interactionType: 'placeholder',
-    prompt: 'ปิดม่านตัวละคร (ยังไม่ได้สร้าง)',
+    interactionType: 'curtain',
+    prompt: 'สัญญาข้อที่ 5 มีผู้คนจับจ้องตลอดเนื่องจากเป็นบุคคลสาธารณะ',
   },
   {
     id: 6,
