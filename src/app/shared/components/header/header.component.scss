@@ -48,7 +48,10 @@
     }
   }
 
-  &__logo {
+  /* the clickable wrapper carries the positioning (was on &__logo itself
+     before it became a link) — a shortcut back to Start, same idea as
+     &__menu-btn's own hover/press feedback below */
+  &__logo-link {
     position: absolute;
     /* centered against the tab-overhang's own height (107.2px), not the
        72px base bar — the logo sits inside the taller tab shape, so
@@ -58,15 +61,33 @@
     left: 24px;
     transform: translateY(-50%);
     height: 60px;
-    width: auto;
-    display: block;
-    pointer-events: none;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition:
+      transform 0.15s ease,
+      opacity 0.15s ease;
+
+    &:hover {
+      opacity: 0.8;
+    }
+
+    &:active {
+      transform: translateY(-50%) scale(0.95);
+    }
 
     @media (max-width: 640px) {
       top: 41.7px;
       left: 16px;
       height: 46.7px;
     }
+  }
+
+  &__logo {
+    height: 100%;
+    width: auto;
+    display: block;
+    pointer-events: none;
   }
 
   /* bare (Start page) variant — path traced pixel-by-pixel from the alpha

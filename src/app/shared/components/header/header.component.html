@@ -1,7 +1,9 @@
 <header class="app-header" [class.app-header--bare]="bare()">
   @if (!bare()) {
   <div class="app-header__tab-overhang" aria-hidden="true"></div>
-  <img class="app-header__logo" src="assets/images/shared/logo-white.webp" alt="Tiny Tracks" />
+  <a class="app-header__logo-link" routerLink="/" aria-label="กลับหน้าแรก">
+    <img class="app-header__logo" src="assets/images/shared/logo-white.webp" alt="Tiny Tracks" />
+  </a>
 
   <button class="app-header__menu-btn" type="button" aria-label="เปิดเมนู" (click)="menuDrawer.toggle()"
     (mouseenter)="menuDrawer.onHoverEnter()" (mouseleave)="menuDrawer.onHoverLeave()">
