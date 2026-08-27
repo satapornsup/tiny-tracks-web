@@ -1,27 +1,598 @@
 .safety-tips {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: 0;
   height: calc(100dvh - 72px);
-  padding: 40px 24px;
+  overflow: hidden;
   background: var(--color-paper);
+  /* card art's own real ratio (3638×1996) — every item's real folder
+     image (card-N.webp/item2-bg.webp) AND the cover share this same
+     ratio, so --card-h derives cleanly from one shared --stack-w
+     instead of being tuned per-element. The 3rd min() term caps width
+     by whatever height is actually available for TWO stacked card-heights
+     (idle stack + a fully risen reveal above it, see &__item--active
+     below) plus a little breathing room — without it, a short/wide
+     viewport could size a stack whose risen card doesn't fit and gets
+     clipped by this page's own overflow:hidden. */
+  --stack-w: min(760px, 90vw, calc((100dvh - 72px - 30px) * 1.8236 / 2));
+  --card-h: calc(var(--stack-w) / 1.8236);
 
   @media (max-width: 640px) {
     height: calc(100dvh - 56px);
+    --stack-w: min(760px, 90vw, calc((100dvh - 56px - 30px) * 1.8236 / 2));
   }
 
-  &__prompt {
-    margin: 0;
-    max-width: 640px;
-    text-align: center;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 22px;
-    color: var(--color-ink);
+  /* same dotted-cloud decor as Home/Result's own &__margin-decor */
+  /* sized/positioned identically to Home's own &__margin-decor (same
+     asset) — height:100% (fills the FULL container, not a smaller
+     centered chunk) and full opacity, no dimming. An earlier pass here
+     used height:70% + opacity:0.6 + a slightly different -35%/+35%
+     offset, which read as visibly smaller/fainter than Home's own. */
+  &__decor {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: auto;
+    aspect-ratio: 701.09 / 1020.62;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  &__decor--left {
+    left: 0;
+    transform: translateX(-40%);
+  }
+
+  &__decor--right {
+    right: 0;
+    transform: translateX(40%) scaleX(-1);
+  }
+
+  /* the wood-plank side strips — copied verbatim from HomeComponent's
+     own &__side (same footer.webp asset, same rotate-a-horizontal-strip
+     trick), per the request to background this page exactly like Home,
+     minus the floating margin-text */
+  &__side {
+    --side-w: 35px;
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: var(--side-w);
+    overflow: hidden;
+    pointer-events: none;
 
     @media (max-width: 640px) {
-      font-size: 16px;
+      --side-w: 16px;
     }
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3000px;
+      height: var(--side-w);
+      background-image: url("/assets/images/start/footer.webp");
+      background-repeat: repeat-x;
+      background-position: top left;
+      background-size: auto 100%;
+      transform-origin: top left;
+      transform: translate(var(--side-w), 0) rotate(90deg);
+    }
+  }
+
+  &__side--left {
+    left: 0;
+  }
+
+  &__side--right {
+    right: 0;
+    transform: scaleX(-1);
+  }
+
+  /* bottom-anchored, not centered — the reference mockup has the folder
+     stack's own bottom edge flush with the true screen edge, with
+     overflow:hidden above clipping anything that would spill past it */
+  &__stage {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: var(--stack-w);
+    z-index: 1;
+  }
+
+  /* purely decorative closed folder behind item 5 — same box model as
+     &__item (own peek/scale, bottom-center pivot) but static: no click
+     handler, no entrance cascade (it's not in the itemEls query in the
+     .ts), just sitting there from first paint. Continues the same
+     peek/scale steps every real item already uses (+30px, -0.02 scale
+     per step back) so it reads as "one more card" rather than a
+     different object stuck on the end. */
+  &__closed {
+    position: absolute;
+    left: 0;
+    bottom: 192px;
+    width: 100%;
+    height: var(--card-h);
+    transform: scale(0.9);
+    transform-origin: bottom center;
+    object-fit: contain;
+    object-position: bottom;
+    max-width: none;
+    pointer-events: none;
+  }
+
+  /* the idle "DO / DON'T" cover — the same real card ratio/height as
+     every item below it, permanently z-index 10 (the ONLY explicit
+     z-index on this whole stage — see &__item below) so it hides the
+     lower (non-peeking) body of every idle item beneath it */
+  /* slightly BIGGER than every item (which all share this same --card-h
+     at their own scale:1) — the front cover reads as the biggest, closest
+     folder in the stack, not just another same-size sheet sitting on
+     top. transform (not a separate width/height) so it grows from the
+     same bottom-center pivot every item's own scale uses, keeping its
+     bottom edge flush with the true screen edge while it grows upward
+     and outward past the stage's own box (harmless — nothing clips
+     there except this page's own outer overflow:hidden, and 6% doesn't
+     reach that far). */
+  &__cover {
+    position: relative;
+    width: 100%;
+    height: var(--card-h);
+    z-index: 10;
+    pointer-events: none;
+    transform: scale(1.05);
+    transform-origin: bottom center;
+  }
+
+  &__cover-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: bottom;
+    max-width: none;
+  }
+
+  &__cover-do {
+    position: absolute;
+    left: 5%;
+    top: 15%;
+    width: 20%;
+    height: auto;
+    max-width: none;
+  }
+
+  &__cover-dont {
+    position: absolute;
+    right: 5%;
+    top: 15%;
+    width: 38%;
+    height: auto;
+    max-width: none;
+  }
+
+  &__cover-header {
+    position: absolute;
+    left: 10.5%;
+    top: 2%;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(22px, 1.6vw, 15px);
+    color: var(--color-ink);
+    opacity: 0.7;
+  }
+
+  &__cover-label {
+    position: absolute;
+    left: 50%;
+    bottom: 5%;
+    transform: translateX(-50%);
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(30px, 1.6vw, 15px);
+    color: var(--color-ink);
+    opacity: 0.9;
+  }
+
+  /* ONE element per item plays BOTH roles — the peeking tab AND the
+     fully-risen card — instead of a separate flat-color rectangle for
+     the tab: idle, it sits at a small +bottom offset (inline style,
+     per-item, increasing further back in the stack) so only its own
+     top sliver poking above &__cover's top edge is visible (everything
+     below that is hidden under &__cover's higher z-index); active, it
+     rises to &__item--active's much larger bottom offset, clearing
+     &__cover's top entirely so the WHOLE card shows. Both states use
+     the exact same real folder image — nothing here is a drawn
+     rectangle.
+
+     No explicit z-index here on purpose — &__cover is the ONLY layer
+     with one (10). Every item is positioned but z-index:auto, so
+     among themselves they just paint in DOM order, and ties go to
+     whichever is LATER in the DOM. A per-item items.length-index
+     z-index was tried first to force item 1 in front of item 2 etc. —
+     removed per request in favor of just controlling DOM order
+     instead: the template iterates itemsBackToFront (item 5 first,
+     item 1 last, see the .ts), so item 1 still wins over the rest
+     wherever their boxes overlap (which given how little the `bottom`
+     offsets differ vs. --card-h is nearly their whole area) without
+     any numeric z-index bookkeeping. &__cover's explicit 10 still
+     beats every item regardless, which is the one relationship that
+     actually has to hold — it's what hides idle bodies and gives the
+     active card's tuck-behind-cover overlap below. */
+  &__item {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: var(--card-h);
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+    /* bottom-center pivot — idle items scale DOWN toward this point
+       (see item.scale in the .ts) instead of rotating, so a further-back
+       item reads as "smaller/receding" while its bottom edge (where it
+       meets the item in front of it) stays put */
+    transform-origin: bottom center;
+    transition:
+      bottom 0.25s ease,
+      transform 0.25s ease;
+  }
+
+  /* the risen card's own BOTTOM sinks slightly INTO the cover's own
+     height (not floating cleanly above it), so the reveal reads as
+     tucked behind &__cover rather than seamed flush on top of it —
+     the -4% is a hand-tuned overlap depth: enough to visibly land
+     inside &__cover's own (bigger, scale:1.05'd) extent without
+     eating into the risen card's own readable content near its top.
+
+     z-index:5 here is the one deliberate exception to "&__cover is the
+     only explicit z-index" above — while idle, an item's own DOM
+     position is enough (see itemsBackToFront), but the MOMENT it's
+     active it needs to beat every OTHER item's sliver too, including
+     ones ahead of it in the stack (e.g. item 5 active still has to
+     cover item 1/2/3/4's peeking tabs, not just item 5's own idle
+     neighbors) — still less than &__cover's 10, so it stays tucked
+     behind the cover exactly like the idle state did. */
+  &__item--active {
+    bottom: calc(var(--card-h) - 4%);
+    z-index: 5;
+  }
+
+  &__item-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: bottom;
+    max-width: none;
+    pointer-events: none;
+  }
+
+  /* sits near the item's own top edge — coincides with the visible
+     peeking sliver in the idle state AND the top of the fully-risen
+     card in the active state, matching the reference mockup showing
+     the item number in both places. Every item's own real background
+     art (bg-N.webp/item2-bg.webp) is genuinely blank now (no baked-in
+     "0N" anywhere — that text used to live inside the flattened
+     aข้อ-3X.webp exports, retired along with the rest of their baked
+     text), so every item needs this real tag, not just item 2 like
+     before. It gets its own small pill background for contrast against
+     the pale cream tab strip every one of these folders has up there. */
+  &__item-tag {
+    position: absolute;
+    top: 4px;
+    transform: translateX(-50%);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(25px, 1.6vw, 15px);
+    color: var(--color-ink);
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  /* each folder's own real tab notch isn't centered, and isn't in the
+     same spot as any other folder's — measured each one's alpha
+     channel directly off the real art to find its true center, same
+     technique used to find item 2's own 82% originally. */
+  &__item-tag--1 {
+    left: 35%;
+  }
+
+  &__item-tag--2 {
+    left: 76%;
+  }
+
+  &__item-tag--3 {
+    left: 59%;
+    color: white;
+  }
+
+  &__item-tag--4 {
+    left: 13%;
+    color: white;
+  }
+
+  &__item-tag--5 {
+    left: 78%;
+  }
+
+  /* ---- shared content layer, every item builds on this the same way
+     item 2 always did: a blank &__panel-bg underneath, real DOM text
+     for &__do/&__dont, and per-item illustration pieces layered on top
+     (@switch (item.id) in the template) ---- */
+  &__panel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  &__panel-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: bottom;
+    max-width: none;
+    pointer-events: none;
+  }
+
+  &__do,
+  &__dont {
+    position: absolute;
+    left: 6%;
+    width: 80%;
+  }
+
+  &__do {
+    top: 15%;
+  }
+
+  &__do--wide {
+    width: 88%;
+  }
+
+  &__dont {
+    top: 55%;
+  }
+
+  &__heading {
+    margin: 0 0 0.3em;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(13px, 2.4vw, 22px);
+    color: var(--color-ink);
+
+    img {
+      width: 10%;
+      height: auto;
+      max-width: none;
+    }
+  }
+
+  &__text {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(25px, 1.5vw, 14px);
+    line-height: 1.4;
+    color: var(--color-ink);
+  }
+
+  /* generic illustration slot, right of &__do/&__dont — items 1/3/4
+     each fill it a different way (see the modifiers below); item 2's
+     own &__item2-media is fully self-contained and doesn't need this
+     base rule at all (declared further down, after this, so its own
+     right/top/width/height still wins). */
+  &__media {
+    position: absolute;
+    right: 5%;
+    top: 15%;
+    height: 78%;
+  }
+
+  /* item 1 — DO's own photo above DON'T's own photo, stacked instead of
+     side-by-side (matches the reference: each photo sits right next to
+     its OWN text row, not grouped into one shared media column like
+     item 2's) */
+  &__media--stack {
+    display: flex;
+    align-items: end;
+    flex-direction: column;
+    justify-content: space-between;
+
+    img {
+      width: auto;
+      height: 48%;
+      max-width: none;
+    }
+  }
+
+  /* item 3/4 — one illustration shared by both DO and DON'T, centered
+     in the slot instead of stacked/split */
+  &__media--center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      max-width: 85%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+    }
+  }
+
+  /* item 4's own 4 tiny "ok/not ok" callouts next to each garment —
+     same idea as item 2's own &__item2-label, positioned by eye against
+     item4-character.webp's own real garment placement */
+  &__item4-media {
+    img {
+      max-height: 92%;
+    }
+  }
+
+  &__item4-label {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(20px, 1.1vw, 10px);
+    color: var(--color-brand-green);
+    white-space: nowrap;
+
+    img {
+      width: 0.9em;
+      height: 0.9em;
+      max-width: none;
+    }
+  }
+
+  &__item4-label--strap {
+    left: -20%;
+    bottom: 30%;
+  }
+
+  &__item4-label--chest {
+    left: -10%;
+    top: 20%;
+  }
+
+  &__item4-label--shirt {
+    right: 0;
+    top: 45%;
+  }
+
+  &__item4-label--pants {
+    right: 0;
+    bottom: 2%;
+    text-align: right;
+    line-height: 1.2em;
+  }
+
+  /* item 5 — DO-only (no &__dont at all), a full-width row of 3
+     illustrations below the text instead of a right-side media slot */
+  &__row {
+    position: absolute;
+    left: 5%;
+    right: 5%;
+    bottom: 12%;
+    height: 40%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  &__row-img {
+    height: 100%;
+    width: auto;
+    max-width: none;
+  }
+
+  &__row-bully {
+    height: 110%;
+    width: auto;
+    max-width: none;
+  }
+
+  &__row-bra-char {
+    height: 80%;
+    width: auto;
+    max-width: none;
+  }
+
+  /* the small bra cutout sits between the polaroid and the curtain
+     scene as its own little item, not full row height like the other
+     3 — vertically centered instead of bottom-aligned like its
+     row siblings */
+  &__row-bra {
+    align-self: center;
+    height: 45%;
+    width: auto;
+    max-width: none;
+  }
+
+  /* ---- item 2 only — hand-built from raw pieces first, before the
+     others followed the same approach (see the .ts's own bgImage
+     comment) ---- */
+  &__item2-media {
+    position: absolute;
+    right: 4%;
+    top: 12%;
+    width: 46%;
+    height: 74%;
+  }
+
+  &__item2-id {
+    position: absolute;
+    left: -15%;
+    top: 45%;
+    width: 50%;
+    height: auto;
+    max-width: none;
+  }
+
+  &__item2-shirt {
+    position: absolute;
+    right: 0;
+    top: 35%;
+    width: 60%;
+    height: auto;
+    max-width: none;
+  }
+
+  &__item2-label {
+    position: absolute;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(14px, 1.1vw, 10px);
+    color: var(--color-brand-pink);
+    white-space: nowrap;
+  }
+
+  &__item2-label--school {
+    right: 2%;
+    top: 28%;
+  }
+
+  &__item2-label--schedule {
+    right: 0;
+    top: 85%;
+    text-align: right;
+  }
+
+  &__item2-label--address {
+    left: 38%;
+    top: 60%;
+  }
+
+  &__item2-label--name {
+    left: 25%;
+    top: 85%;
+  }
+
+  &__nav {
+    position: absolute;
+    bottom: 20px;
+    z-index: 30;
+  }
+
+  &__nav--back {
+    left: 20px;
+  }
+
+  &__nav--next {
+    right: 20px;
   }
 }
