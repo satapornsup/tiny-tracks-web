@@ -4,32 +4,26 @@
   height: 100%;
 
   /* shared by both fixed side panels and the stage's own left/right
-     inset below, so they can never drift out of sync with each other.
-     --panel-w is derived from --panel-h and panel-texture.webp's own
-     500/1224 aspect ratio (not chosen independently) — same technique as
-     question-outfit-picker's --panel-w, since &__panel-bg shows that
-     texture at its real ratio (height-driven, width auto) instead of
-     cropping it to a fixed width via background-size:cover.
-     Three-way min, same shape as question-outfit-picker's --panel-h: the
-     dvh term fills the true available height with no gap on an ordinary
-     screen (its own reason for existing — see git history), the 1000px
-     term is a sanity ceiling on a freakishly tall viewport, and the 55vw
-     term is what actually makes this SHRINK on a narrow one instead of
-     hard-switching to a different stacked layout at some breakpoint (the
-     previous approach) — same continuous-scaling idea as Q5's wardrobe
-     panels. 55vw specifically keeps the dvh term winning (so the no-gap
-     behavior holds) on anything ~1080px tall or shorter at typical
-     desktop widths; only kicks in once the viewport itself gets narrow.
-     max(220px, …) floors how far --panel-h (and so --panel-w) can shrink
-     below ~400px viewport width (where 55vw would otherwise drop under
-     it) — &__panel-scroll's padding is % now (see that rule), so this
-     floor is about keeping the wood-frame column from going fully
-     needle-thin more than about legibility; too high a floor instead
-     starves &__stage of room and the item cluster starts overlapping the
-     PRIVATE CONTENT button on a true small-phone width. */
+     inset below, so they can never drift out of sync with each other —
+     height-driven (100dvh - header-h), same formula (and same asset,
+     panel-texture-left/right.webp) as liability-waiver's own --panel-w.
+     900/1946 is the art's real intrinsic ratio (measured off the file).
+
+     A width-led clamp(floor, Kvw, ceiling) version of this was tried
+     (to make 1920 and 1440 look like consistent scaled versions of each
+     other — a real, separate ask) but it necessarily broke the box's
+     ratio away from the art's own real one at every width except the
+     1920 reference the clamp was tuned against, and there's no version
+     of that which doesn't either crop the art's own baked-in border
+     (object-fit:cover) or leave a gap top/bottom (height:auto) — both
+     were tried and rejected ("มันไม่สวยอะ", "อย่าให้มันตัดขอบ"). Back to
+     height-driven, matching liability-waiver: this always keeps the box
+     at the art's exact real ratio (nothing to crop or gap, ever) and
+     always fills the column edge-to-edge, at the cost of not looking
+     identically proportioned between two very differently-shaped
+     windows at "the same width" — accepted tradeoff, per request. */
   --header-h: 72px;
-  --panel-h: max(220px, min(calc(100dvh - var(--header-h)), 1000px, 55vw));
-  --panel-w: calc(var(--panel-h) * 500 / 1224);
+  --panel-w: calc((100dvh - var(--header-h)) * 900 / 1946);
 
   @media (max-width: 640px) {
     --header-h: 56px;
@@ -54,31 +48,31 @@
      (not &__stage's narrower box) — measured off the desktop reference
      mockup (b คำถาม2.png) at its full 2000×1125 canvas */
   &__decor--a {
-    top: 40%;
-    left: 5%;
+    top: 45%;
+    left: 8%;
     width: 31%;
     max-width: none;
-    --rot: -50deg;
+    --rot: -40deg;
   }
 
   &__decor--b {
-    top: 66%;
+    top: 70%;
     right: 19%;
-    width: 19%;
+    width: 22%;
     max-width: none;
-    --rot: 15deg;
+    --rot: 20deg;
   }
 
   &__decor--c {
-    top: -39%;
-    right: 36%;
-    width: 20%;
+    top: -33%;
+    right: 35%;
+    width: 22%;
     max-width: none;
-    --rot: 150deg;
+    --rot: 140deg;
   }
 
   &__decor--d {
-    bottom: -48%;
+    bottom: -38%;
     left: 33%;
     width: 20%;
     max-width: none;
@@ -88,12 +82,26 @@
   /* the two reading panels — pinned to the actual screen edge (not part
      of the centered flow) and spanning the full header-to-bottom height,
      same fixed-column + flex-centering technique as
-     question-outfit-picker's &__column */
+     question-outfit-picker's &__column/liability-waiver's &__side.
+     width: var(--panel-w) is load-bearing now, not just decorative —
+     the ORIGINAL version of this rule never needed it: &__panel-bg used
+     to be height:100%/width:auto, so the image's own aspect ratio drove
+     its width and the fixed column (only `left:0`, no width) just
+     shrank to fit around it. Once &__panel-bg became width:100%/
+     object-fit:cover (to fill the now-100%-height wrap edge-to-edge
+     instead of stopping at its own capped height), NOTHING sized this
+     column's width anymore — &__panel-wrap's own width:100% resolves
+     against ITS container's width, i.e. this element's, which had none,
+     an undefined cycle that left the browser falling back to some
+     other number entirely (this was the actual "1440 พัง" bug: the
+     panel rendered far wider than --panel-w was ever computing, because
+     nothing on this element was reading that variable at all). */
   &__panel {
     position: fixed;
     top: var(--header-h);
     bottom: 0;
     left: 0;
+    width: var(--panel-w);
     z-index: 2;
     display: flex;
     align-items: center;
@@ -105,26 +113,38 @@
     right: 0;
   }
 
-  /* shrink-wraps &__panel-bg exactly — position:relative makes IT (not
-     &__panel) the containing block for &__panel-scroll's inset:0 below,
-     same &__panel-wrap/&__panel pairing as question-outfit-picker */
+  /* position:relative makes this (not &__panel) the containing block for
+     &__panel-scroll's inset:0 below, same &__panel-wrap/&__panel pairing
+     as question-outfit-picker — height:100% so the panel always runs
+     edge-to-edge with zero gap at the bottom, matching Home's own
+     &__side and liability-waiver's &__panel-wrap (full column height, no
+     separate capped-height formula). Only works cleanly because
+     --panel-w above is height-driven using this same art's real ratio —
+     a width-led version of --panel-w was tried and reverted (see that
+     var's own comment) specifically because it broke this assumption. */
   &__panel-wrap {
     position: relative;
-    display: block;
+    height: 100%;
+    width: 100%;
     line-height: 0;
-    height: var(--panel-h);
   }
 
-  /* real panel-texture.webp shown at its own 500/1224 ratio — height
-     drives the box (via &__panel-wrap), width follows automatically, so
-     the full image always shows with nothing cropped off, same as
-     question-outfit-picker's &__panel img, at every viewport size — the
-     wardrobe panels it's modeled on stay tall columns all the way down
-     to phone widths too, same as this one does now. */
+  /* &__panel-wrap's box is already this same column's real height with
+     --panel-w derived from that SAME number using the art's own ratio
+     (see --panel-w above), so this never actually crops or scales
+     anything up in practice — object-fit:cover is just a safety net
+     against sub-pixel rounding, same reasoning as liability-waiver's own
+     &__panel-bg. (width:100%/object-fit:cover and height:100%/width:auto
+     were both tried here too, while --panel-w was width-led instead of
+     height-led — cover cropped the art's own border at every width but
+     the one the clamp was tuned against, width:auto left a gap instead;
+     neither is needed now that --panel-w and this box's ratio always
+     match by construction.) */
   &__panel-bg {
     display: block;
     height: 100%;
-    width: auto;
+    width: 100%;
+    object-fit: cover;
     max-width: none;
     pointer-events: none;
   }
@@ -145,9 +165,9 @@
        --panel-w on a narrow viewport instead of eating an ever-larger
        share of it — at the panel sizes this was tuned against it lands
        close to the old px values, but a fixed px padding stopped leaving
-       any real room for text once --panel-h's 55vw term (see that var's
-       comment) started shrinking the panel for real */
-    padding: 16% 10% 25% 10%;
+       any real room for text once the panel itself started shrinking on
+       a narrow/short viewport */
+    padding: 20% 10% 25% 10%;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -160,7 +180,7 @@
     scrollbar-color: white transparent;
 
     &::-webkit-scrollbar {
-      width: 10px;
+      width: 14px;
     }
 
     &::-webkit-scrollbar-thumb {
@@ -188,25 +208,63 @@
     }
   }
 
+  /* aspect-ratio (not just height:auto) — height:auto alone only settles
+     into the image's real 382:225 ratio once the browser has actually
+     decoded it and knows its natural size; before that (any real gap
+     between first layout and decode finishing — a cold cache, a slow
+     connection, or just DevTools sampling mid-load) it has nothing to
+     go on and can lay out at some other placeholder ratio, then reflow
+     once decode catches up. This was the actual "2 ที่ ขนาดไม่เท่า"
+     report: both eye icons use the exact same class, so the mismatch
+     was one of them getting measured before its own decode finished,
+     not the two ever being SET to different sizes. Declaring the ratio
+     in CSS itself removes the wait entirely — the box is the right
+     shape from the very first layout pass, decoded or not. */
+  /* same blink as &__private-eye below (see that rule's own comment for
+     why a scaleY squish stands in for a real closed-eye frame) — a
+     different delay per instance (.mt-4 = left panel, .self-end = right
+     panel) so the two don't blink in perfect unison */
   &__photo-eye {
     width: 40%;
+    height: auto;
+    aspect-ratio: 382 / 225;
+    transform-origin: center;
+    animation: privacy-reveal-blink 4s ease-in-out infinite;
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
+  }
+
+  &__photo-eye.mt-4 {
+    animation-delay: 0s;
+  }
+
+  &__photo-eye.self-end {
+    animation-delay: 1.8s;
   }
 
   /* clamp (not a fixed 22px) so this scales down continuously as the
-     viewport narrows, same spirit as --panel-h above — a fixed size here
-     was fighting the panel's own shrinking width, forcing text to wrap
-     to 1-2 letters per line well before --panel-h's floor even kicks in */
+     viewport narrows along with --panel-w above — a fixed size here was
+     fighting the panel's own shrinking width, forcing text to wrap to
+     1-2 letters per line */
   &__name {
+    padding: 0% 5%;
     font-weight: 700;
-    font-size: clamp(11px, 3vw, 22px);
+    font-size: clamp(26px, 3vw, 26px);
     color: white;
     margin-bottom: 2px !important;
   }
 
   &__description {
+    padding: 0% 5%;
     font-weight: 600;
-    font-size: clamp(11px, 3vw, 22px);
+    font-size: clamp(25px, 3vw, 25px);
     color: white;
+    /* "justify" — stretches each line (except the last) so both its left
+       AND right edges line up flush with the block's own edges, instead
+       of only the left edge lining up and the right edge ragged */
+    text-align: justify;
   }
 
   &__math-card,
@@ -226,21 +284,23 @@
      stretching this box top:0/bottom:0 across a tall/narrow one (tablet
      portrait, etc.) blows those % far apart vertically since they're all
      relative to a box that's suddenly much taller. Capped height +
-     vertical centering (same technique as question-outfit-picker's
-     --panel-h) keeps the box close to the proportions the % were actually
-     measured against, on any viewport. */
+     vertical centering (same technique as question-outfit-picker's own
+     panel height) keeps the box close to the proportions the % were
+     actually measured against, on any viewport. */
   &__stage {
     position: absolute;
     top: 50%;
     left: var(--panel-w);
     right: var(--panel-w);
-    /* 46vw term keeps this shrinking in step with --panel-h as the
+    /* 46vw term keeps this shrinking in step with --panel-w as the
        viewport narrows (same reasoning as that var's own comment above)
        instead of staying pinned near its dvh/650px cap while only the
        WIDTH available to it shrinks — that would leave the item cluster
        positioned for a wide-short box sitting in an increasingly
        tall-narrow one instead, drifting from the mockup it was measured
-       against the more the screen narrows. */
+       against the more the screen narrows. (A width-led clamp version
+       was tried alongside --panel-w's own — reverted for the same
+       reason, see that var's comment.) */
     height: min(calc(100dvh - var(--header-h)), 650px, 46vw);
     transform: translateY(-50%);
     pointer-events: none;
@@ -253,6 +313,19 @@
      so nothing here blocks taps on touch devices (there's no hover
      there to trigger anyway), re-enabled only inside the
      hover-capable-pointer media query. */
+  /* idle float loop, no hover — same technique as start.component.scss's
+     own &__decor (see that file's own keyframe comment for the full
+     reasoning): every item bobs up/down with a touch of extra tilt at
+     the peak, layered ON TOP of its own resting --rot (chained rotate()s
+     compose instead of overriding), each with its own --float-duration/
+     --float-delay so the 4 pieces drift out of sync instead of bobbing
+     in lockstep. animation-fill-mode:backwards matters here for the
+     same reason it did on Start — without it, each item would render
+     flat/unrotated (ignoring --rot) for its own entire --float-delay
+     window before snapping to its real tilt the instant the delay
+     ends. Replaces the old hover-only wobble entirely (mouse-only, so
+     touch never saw it — the whole point of switching to an idle loop
+     instead of adding a tap equivalent). */
   &__item {
     position: absolute;
     width: auto;
@@ -260,16 +333,13 @@
     display: block;
     pointer-events: none;
     filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.15));
-    transform: rotate(var(--rot, 0deg));
-    transition: transform 0.25s ease;
+    animation: privacy-reveal-item-float var(--float-duration, 6s) ease-in-out infinite;
+    animation-delay: var(--float-delay, 0s);
+    animation-fill-mode: backwards;
 
-    @media (hover: hover) and (pointer: fine) {
-      pointer-events: auto;
-      cursor: default;
-
-      &:hover {
-        transform: rotate(calc(var(--rot, 0deg) + 10deg)) scale(1.08);
-      }
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+      transform: rotate(var(--rot, 0deg));
     }
   }
 
@@ -278,31 +348,39 @@
      &__stage comment above for why that only holds up well on a
      wide-short viewport close to the mockup's own proportions */
   &__item--exam-paper {
-    left: 15%;
-    bottom: 45%;
-    width: 35%;
+    left: 12%;
+    bottom: 49%;
+    width: 45%;
     --rot: -2deg;
+    --float-duration: 6s;
+    --float-delay: 0s;
   }
 
   &__item--eraser {
-    left: 53%;
-    bottom: 80%;
-    width: 8.6%;
+    left: 60%;
+    bottom: 72%;
+    width: 10%;
     --rot: -8deg;
+    --float-duration: 5.4s;
+    --float-delay: 0.5s;
   }
 
   &__item--shirt {
-    left: 52%;
-    top: 25%;
-    width: 34%;
+    left: 56%;
+    top: 35%;
+    width: 43%;
     --rot: -2deg;
+    --float-duration: 6.8s;
+    --float-delay: 1s;
   }
 
   &__item--id-card {
-    left: 20%;
+    left: 15%;
     top: 62%;
-    width: 27%;
+    width: 35%;
     --rot: -7deg;
+    --float-duration: 5.8s;
+    --float-delay: 1.4s;
   }
 
   /* holds the absolute stage placement that used to live on &__private-btn
@@ -312,10 +390,20 @@
      child of the button */
   &__private-content {
     position: absolute;
-    right: 3%;
-    bottom: 8%;
+    right: 0%;
+    bottom: -2%;
   }
 
+  /* "blinks" with just the one static eye.webp — no separate closed-eye
+     frame to swap to, so a quick vertical squish (scaleY toward 0 and
+     back) stands in for it instead, same idea as a sprite-swap blink but
+     done with a transform. Idle/passive, no hover or click needed (same
+     reasoning as every other ambient loop in this app — see start's own
+     &__decor float or safety-tips' entrance cascade for the same
+     pattern). Spends nearly the whole 4s loop open, only closes for a
+     brief moment near the end of each cycle, matching how an actual
+     blink reads (quick, infrequent) rather than a slow constant
+     flutter. */
   &__private-eye {
     position: absolute;
     bottom: 100%;
@@ -323,6 +411,12 @@
     width: 30%;
     margin-bottom: 15px;
     pointer-events: none;
+    transform-origin: center;
+    animation: privacy-reveal-blink 4s ease-in-out infinite;
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
   }
 
   &__private-btn {
@@ -335,7 +429,7 @@
     border-radius: 5px;
     background: rgba(255, 253, 246, 0.8);
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 600;
     /* clamp, same reasoning as &__name/&__description above — this was
        the main thing forcing the button to wrap to two lines and swell
        wide enough to collide with &__item on a narrow viewport */
@@ -440,5 +534,39 @@
     &:active {
       transform: scale(0.95);
     }
+  }
+}
+
+/* gentle bob + a touch of extra tilt at the peak — chained rotate()s
+   compose (rotate(var(--rot)) rotate(4deg) = var(--rot)+4deg), so this
+   layers on top of each item's own resting angle instead of overriding
+   it back to a flat 0 mid-loop, same keyframe shape as start.component
+   .scss's own &__decor entrance/idle float */
+@keyframes privacy-reveal-item-float {
+  0%,
+  100% {
+    transform: rotate(var(--rot, 0deg)) translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: rotate(var(--rot, 0deg)) translateY(-10px) rotate(4deg);
+  }
+}
+
+/* mostly open, dips shut briefly near the end of the loop then reopens
+   before it repeats — reads as one blink per cycle, not a flutter */
+@keyframes privacy-reveal-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  95% {
+    transform: scaleY(0.1);
+  }
+
+  97% {
+    transform: scaleY(1);
   }
 }
