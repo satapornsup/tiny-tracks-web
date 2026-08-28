@@ -44,16 +44,16 @@
     @if (offerAt('top-left'); as offer) {
     <div class="work-clock__card work-clock__card--top-left">
       <p class="work-clock__live pl-7!">LIVE<span class="work-clock__live-dot"></span></p>
-      <p class="work-clock__amount mr-4!">
+      <p class="work-clock__amount mr-10!">
         <img src="assets/images/question/q3/folder.webp" alt="" aria-hidden="true" />
         {{ offer.amount }}
       </p>
-      <p class="work-clock__time mr-10!">{{ offer.timeRange }}</p>
-      <button class="work-clock__switch mr-20!" type="button" [class.work-clock__switch--on]="isOn(offer.id)"
+      <p class="work-clock__time mr-16!">{{ offer.timeRange }}</p>
+      <button class="work-clock__switch mr-32!" type="button" [class.work-clock__switch--on]="isOn(offer.id)"
         (click)="toggle(offer.id)">
         @if (!isOn(offer.id)) {
         <svg class="work-clock__switch-pill" viewBox="0 0 100 42" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect x="3" y="3" width="94" height="36" rx="18" fill="var(--color-cream)" stroke="var(--color-rust)"
+          <rect x="3" y="3" width="91" height="36" rx="18" fill="var(--color-cream)" stroke="var(--color-rust)"
             stroke-width="1.8" stroke-dasharray="1 13" stroke-linecap="round" />
         </svg>
         }
@@ -69,16 +69,16 @@
     @if (offerAt('top-right'); as offer) {
     <div class="work-clock__card work-clock__card--top-right items-start!">
       <p class="work-clock__live">LIVE<span class="work-clock__live-dot"></span></p>
-      <p class="work-clock__amount ml-4!">
+      <p class="work-clock__amount ml-10!">
         <img src="assets/images/question/q3/folder.webp" alt="" aria-hidden="true" />
         {{ offer.amount }}
       </p>
-      <p class="work-clock__time ml-10!">{{ offer.timeRange }}</p>
-      <button class="work-clock__switch ml-20!" type="button" [class.work-clock__switch--on]="isOn(offer.id)"
+      <p class="work-clock__time ml-16!">{{ offer.timeRange }}</p>
+      <button class="work-clock__switch ml-32!" type="button" [class.work-clock__switch--on]="isOn(offer.id)"
         (click)="toggle(offer.id)">
         @if (!isOn(offer.id)) {
         <svg class="work-clock__switch-pill" viewBox="0 0 100 42" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect x="3" y="3" width="94" height="36" rx="18" fill="var(--color-cream)" stroke="var(--color-rust)"
+          <rect x="3" y="3" width="91" height="36" rx="18" fill="var(--color-cream)" stroke="var(--color-rust)"
             stroke-width="1.8" stroke-dasharray="1 13" stroke-linecap="round" />
         </svg>
         }
@@ -98,7 +98,7 @@
         (click)="toggle(offer.id)">
         @if (!isOn(offer.id)) {
         <svg class="work-clock__switch-pill" viewBox="0 0 100 42" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect x="3" y="3" width="94" height="36" rx="18" fill="var(--color-cream)" stroke="var(--color-rust)"
+          <rect x="3" y="3" width="91" height="36" rx="18" fill="var(--color-cream)" stroke="var(--color-rust)"
             stroke-width="1.8" stroke-dasharray="1 13" stroke-linecap="round" />
         </svg>
         }
@@ -108,7 +108,7 @@
         <span class="work-clock__switch-label">{{ isOn(offer.id) ? 'LIVE' : 'OFF'
           }}<span class="work-clock__switch-dot"></span></span>
       </button>
-      <p class="work-clock__amount ml-10!">
+      <p class="work-clock__amount ml-8!">
         <img src="assets/images/question/q3/folder.webp" alt="" aria-hidden="true" />
         {{ offer.amount }}
       </p>
@@ -119,11 +119,11 @@
     @if (offerAt('bottom-right'); as offer) {
     <div class="work-clock__card work-clock__card--bottom-right">
       <p class="work-clock__live mr-16!">LIVE<span class="work-clock__live-dot"></span></p>
-      <button class="work-clock__switch" type="button" [class.work-clock__switch--on]="isOn(offer.id)"
+      <button class="work-clock__switch mr-8!" type="button" [class.work-clock__switch--on]="isOn(offer.id)"
         (click)="toggle(offer.id)">
         @if (!isOn(offer.id)) {
         <svg class="work-clock__switch-pill" viewBox="0 0 100 42" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect x="3" y="3" width="94" height="36" rx="18" fill="var(--color-cream)" stroke="var(--color-rust)"
+          <rect x="3" y="3" width="91" height="36" rx="18" fill="var(--color-cream)" stroke="var(--color-rust)"
             stroke-width="1.8" stroke-dasharray="1 13" stroke-linecap="round" />
         </svg>
         }

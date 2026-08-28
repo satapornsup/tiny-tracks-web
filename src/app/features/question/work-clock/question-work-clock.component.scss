@@ -244,23 +244,23 @@
   }
 
   &__card--top-left {
-    top: 0%;
-    left: -5%;
+    top: -8%;
+    right: 70%;
   }
 
   &__card--top-right {
-    top: 0%;
-    right: -5%;
+    top: -8%;
+    left: 70%;
   }
 
   &__card--bottom-left {
-    bottom: 0%;
-    left: 0%;
+    bottom: -8%;
+    right: 65%;
   }
 
   &__card--bottom-right {
-    bottom: 0%;
-    right: -5%;
+    bottom: -8%;
+    left: 82%;
   }
 
   /* same 1920-reference K = ceiling ÷ 19.2 as --clock-size/&__stage above
@@ -276,13 +276,14 @@
     gap: 4px;
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: clamp(12px, 1.8229vw, 35px);
+    font-size: clamp(40px, 1.8229vw, 35px);
     color: var(--color-brand-pink);
   }
 
   &__live-dot {
-    width: 5px;
-    height: 5px;
+    width: 8px;
+    height: 8px;
+    margin-bottom: 25px;
     border-radius: 50%;
     background: var(--color-brand-pink);
   }
@@ -294,7 +295,7 @@
     gap: 6px;
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: clamp(11px, 1.3021vw, 25px);
+    font-size: clamp(25px, 1.3021vw, 25px);
     color: var(--color-ink);
 
     img {
@@ -306,8 +307,8 @@
   &__time {
     margin: 0;
     font-family: var(--font-display);
-    font-weight: 700;
-    font-size: clamp(11px, 1.3021vw, 25px);
+    font-weight: 600;
+    font-size: clamp(25px, 1.3021vw, 25px);
     color: var(--color-ink);
     white-space: nowrap;
   }
@@ -325,7 +326,7 @@
     /* exposed as custom properties (not just inline clamp() values) so
        &__switch-knob can derive its exact px size from the SAME numbers
        via calc() instead of a percentage — see &__switch-knob for why */
-    --switch-w: clamp(84px, 7.8125vw, 150px);
+    --switch-w: clamp(92px, 8.8542vw, 170px);
     --switch-pad-y: clamp(6px, 0.5729vw, 11px);
     --switch-pad-x: clamp(10px, 0.8333vw, 16px);
 
@@ -434,8 +435,8 @@
     justify-content: center;
     gap: 8px;
     font-family: var(--font-display);
-    font-weight: 700;
-    font-size: clamp(11px, 1.4583vw, 28px);
+    font-weight: 600;
+    font-size: clamp(11px, 1.4583vw, 25px);
     color: var(--color-ink);
   }
 
@@ -446,8 +447,8 @@
      instead of overshooting past the pill's edge on smaller renders, the
      bug the old fixed -25px had */
   &__switch-dot {
-    width: 7px;
-    height: 7px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     align-self: flex-start;
     margin-top: 2px;
