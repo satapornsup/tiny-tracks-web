@@ -4,16 +4,52 @@
   height: 100%;
 
   --header-h: 72px;
-  /* the mid face's own width — left/right derive theirs FROM this (see
-     &__face--left/right below) so all 3 always sum to exactly 100vw with
-     zero gap between them, instead of 3 independently-clamped widths
-     that left visible dead space between the faces at most viewport
-     sizes (each was sized in isolation, with nothing tying them to the
-     screen width as a group). Raised from clamp(260px,34vw,480px) — that
-     was sized to roughly HALF the screen's height once rendered (its own
-     aspect ratio follows from width), nowhere near the reference's much
-     taller faces. */
-  --face-mid-w: clamp(520px, 52vw, 760px);
+  /* the full header-to-bottom viewport height, uncapped — every face's
+     width below gets a max()'d-in floor derived from THIS (at that
+     face's own real image ratio) so none of them can silently stop
+     growing taller than the viewport just because their vw-based term
+     happened to hit its ceiling first. See --face-mid-w just below for
+     the concrete bug this fixes. */
+  --face-h: calc(100dvh - var(--header-h));
+  /* left/right's own slot math (below) and &__face-filler's position both
+     reference THIS uncorrected value, not --face-mid-w — see that var's
+     own comment for why the two had to be split apart. "capped" =
+     literally what --face-mid-w used to be before the height-floor fix:
+     raised from clamp(260px,34vw,480px) — that was sized to roughly HALF
+     the screen's height once rendered (its own aspect ratio follows from
+     width), nowhere near the reference's much taller faces. */
+  --face-mid-w-capped: clamp(520px, 52vw, 760px);
+  /* the mid face's OWN rendered width — everything else in this
+     component (left/right's slot, filler position) intentionally keeps
+     using --face-mid-w-capped above, NOT this, so mid growing taller
+     here never shrinks them. That split exists because of a regression:
+     --face-mid-w-capped alone still fell short past ~1461px viewport
+     width (once 52vw exceeds the 760px ceiling, width — and therefore
+     height, which just follows it via the image's own ratio, see
+     &__face-img — stops growing entirely; confirmed at 1920×1080 mid
+     froze at 844px tall, leaving the bottom ~150px of the viewport
+     empty). Fixing that by feeding the taller value straight into
+     --face-mid-w-capped (the first attempt here) DID reach full height,
+     but since left/right's own slot width is `(100vw - mid) / 2 + bleed`,
+     inflating mid ate directly into their share and visibly shrank them
+     (1156px → 1082px at 1920) — trading one shortfall for another. This
+     max() only feeds the taller value into MID's own width below, so it
+     grows independently without taking anything away from left/right's
+     slot; the two faces now overlap a little at the seam on very wide
+     screens instead (mid, later in DOM order, wins that overlap — the
+     &__face-filler pair sitting behind either seam already exists to
+     blend exactly this join, see its own comment, so this reads as
+     "denser crowd" rather than a visible seam).
+     Kept at the bare 1:1 ratio deliberately, NOT ×1.15+ — tried that
+     first, but the floor and --face-mid-w-capped are close enough at
+     1440 (745px vs a 748.8px cap) that any multiplier big enough to
+     matter at 1920 also pushed the floor past the cap at 1440 too,
+     growing mid there by 100px+ even though 1440 was never broken.
+     The actual safety margin lives in &__face's own `top` offset
+     instead (see that rule) — pulling the whole box up gains the same
+     extra bottom clearance without touching this width math at all, so
+     it can't regress 1440 the way scaling this ratio did. */
+  --face-mid-w: max(var(--face-mid-w-capped), calc(var(--face-h) * 4031 / 4478));
   /* how far past the true screen edge the two profile faces' art bleeds
      — face-tilt-left/right.webp are asymmetric single-head art (not
      pre-cropped in half), so flush left:0/right:0 alone rendered the
@@ -33,7 +69,7 @@
      eyes, not two side-by-side heads — see FaceConfig comment in the
      .ts), pinned to the true screen edges (same technique as work-clock's
      &__corner) — decorative background only, hidden below 900px since
-     there's no spare width for them there */
+     there's no spare width for them there. */
   &__face {
     position: fixed;
     top: calc(var(--header-h) + 1%);
@@ -51,18 +87,23 @@
      left/right below), so the image is bigger/taller than its visible
      slot alone would allow while the edge touching the mid face doesn't
      move — no gap, no overlap, and the art's far/cropped side bleeds
-     off past the true screen edge instead of being visible mid-frame */
+     off past the true screen edge instead of being visible mid-frame.
+     Deliberately --face-mid-w-capped, NOT --face-mid-w — see that var's
+     own comment: reading the taller, height-floored --face-mid-w here
+     shrank this slot every time mid needed to grow, which is the
+     opposite of what this max()-floor (using these faces' own 4074:4335
+     ratio, face-tilt-left/right.webp) is trying to guarantee. */
   &__face--left,
   &__face--right {
-    width: calc((100vw - var(--face-mid-w)) / 2 + var(--face-bleed));
+    width: max(calc((70vw - var(--face-mid-w-capped)) / 2 + var(--face-bleed)), calc(var(--face-h) * 4074 / 4335));
   }
 
   &__face--left {
-    left: calc(-1.1 * var(--face-bleed));
+    left: calc(-1 * var(--face-bleed));
   }
 
   &__face--right {
-    right: calc(-1.1 * var(--face-bleed));
+    right: calc(-1 * var(--face-bleed));
   }
 
   /* wider than the two profile faces since it has to fit 2 full eyes
@@ -116,7 +157,18 @@
   &__face-filler {
     position: fixed;
     top: calc(var(--header-h) + 4%);
-    width: clamp(620px, 18vw, 260px);
+    /* clamp(min, preferred, max) had min/max swapped (620/260 backwards) —
+       per spec, when the minimum exceeds the maximum the maximum is
+       raised to match it, so this silently resolved to a FROZEN 620px at
+       every viewport width, never actually reading the 18vw term. That's
+       why it looked fine at 1440 (height ~822px happens to almost reach
+       that viewport's ~900px) but visibly stopped short of the bottom at
+       1920 (same fixed 822px against a taller ~1080px viewport). Fixed
+       clamp below keeps 1440's already-confirmed-good size exactly (the
+       vw coefficient is solved so 43.0556vw × 14.4 = 620, i.e. still
+       620px at 1440) while letting it actually grow past that at wider
+       viewports instead of staying capped there. */
+    width: clamp(260px, 43.0556vw, 750px);
     z-index: 0;
     opacity: 0.7;
     pointer-events: none;
@@ -127,13 +179,17 @@
     }
   }
 
+  /* --face-mid-w-capped (not --face-mid-w) — positioned against the same
+     reference left/right's own slot uses, so the filler keeps sitting in
+     the middle of THAT gap regardless of how much taller (wider)
+     --face-mid-w itself grows for the mid face's own height fix */
   &__face-filler--1 {
-    left: calc((160vw - var(--face-mid-w)) / 4);
+    left: calc((155vw - var(--face-mid-w-capped)) / 4);
     transform: translateX(-50%);
   }
 
   &__face-filler--2 {
-    right: calc((160vw - var(--face-mid-w)) / 4);
+    right: calc((155vw - var(--face-mid-w-capped)) / 4);
     transform: translateX(50%);
   }
 
@@ -292,7 +348,7 @@
        out to ~43px on a typical desktop viewport, shorter than one slat,
        so nothing ever rendered even though the element/asset were both
        correctly in place */
-    height: 12%;
+    height: 11.5%;
     overflow: hidden;
     z-index: 3;
     pointer-events: none;
@@ -300,7 +356,7 @@
   }
 
   &__blinds--closed {
-    height: 76%;
+    height: 76.3%;
   }
 
   &__blinds-slats {
@@ -317,8 +373,8 @@
   &__cord {
     position: fixed;
     top: 16%;
-    right: 4.8%;
-    width: clamp(36px, 4vw, 64px);
+    right: 5.05%;
+    width: 3.6%;
     z-index: 2;
     border: none;
     background: transparent;
@@ -370,7 +426,7 @@
      narrower-than-intended shape earlier this project, same risk here */
   &__cord-tooltip {
     position: absolute;
-    top: 50%;
+    top: 60%;
     right: calc(100% + 10px);
     transform: translateY(-50%) translateX(6px);
     display: inline-flex;
