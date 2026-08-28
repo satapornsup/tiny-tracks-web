@@ -71,7 +71,7 @@
   &__corner-hand {
     position: absolute;
     top: 48%;
-    left: -3%;
+    left: -9%;
     width: auto;
     max-width: none;
     transform-origin: 50% 100%;
@@ -104,7 +104,7 @@
      land on that right: anchor line. */
   &__corner--right &__corner-hand {
     left: auto;
-    right: -3%;
+    right: -9%;
   }
 
   &__corner--right &__corner-hand--upper {
