@@ -11,7 +11,7 @@
     <img class="question-shell__callout-arrow" src="assets/images/question/q1/arrow.webp" alt="" />
     <p class="question-shell__callout-title question-shell__callout-title--green">SHEAR</p>
     <p class="question-shell__callout-line">สร้างยอดแชร์เกิน..5 k !</p>
-    <p class="question-shell__callout-line pl-10">
+    <p class="question-shell__callout-line pl-20">
       <img class="question-shell__callout-icon" src="assets/images/question/q1/plus.webp" alt="" />
       อัพโหลดภาพ
     </p>
@@ -23,13 +23,13 @@
 
   <div class="question-shell__callout question-shell__callout--right" aria-hidden="true">
     <img class="question-shell__callout-heart" src="assets/images/question/q1/heart.webp" alt="" />
-    <p class="question-shell__callout-title question-shell__callout-title--pink">LIKE</p>
+    <p class="question-shell__callout-title question-shell__callout-title--pink pr-3">LIKE</p>
     <p class="question-shell__callout-line">สร้างยอดไลค์เกิน 10k !</p>
     <p class="question-shell__callout-line">
       <img class="question-shell__callout-icon w-4!" src="assets/images/question/q1/person.webp" alt="" />
       สร้างฐานแฟนคลับ
     </p>
-    <p class="question-shell__callout-line pr-8">พร้อมรับ สปอนเซอร์..</p>
+    <p class="question-shell__callout-line pr-12">พร้อมรับ สปอนเซอร์..</p>
   </div>
   }
 
@@ -54,8 +54,7 @@
   <app-question-curtain class="question-shell__curtain" [initialClosed]="initialCurtainClosed" />
   }
   @case ('liability-waiver') {
-  <app-question-liability-waiver class="question-shell__liability-waiver"
-    [initialAccepted]="initialWaiverAccepted" />
+  <app-question-liability-waiver class="question-shell__liability-waiver" [initialAccepted]="initialWaiverAccepted" />
   }
   @default {
   <p class="question-shell__prompt">{{ config.prompt }}</p>

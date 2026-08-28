@@ -11,7 +11,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: min(135px, 32vw);
+  width: min(145px, 32vw);
   aspect-ratio: 110 / 48;
   gap: 10px;
   padding: 0 8px;
@@ -27,7 +27,7 @@
   }
 
   &:hover {
-    transform: scale(1.04);
+    transform: scale(1.1);
   }
 
   &:active {
@@ -51,8 +51,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
+    width: 28px;
+    height: 28px;
     flex-shrink: 0;
     border: 2px solid var(--color-ink);
     border-radius: 5px;
@@ -67,8 +67,8 @@
   }
 
   &__check {
-    width: 62%;
-    height: 62%;
+    width: 80%;
+    height: 80%;
   }
 
   &__label {
