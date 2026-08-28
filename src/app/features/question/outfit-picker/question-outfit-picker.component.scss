@@ -10,7 +10,14 @@
      two stay in sync as a single source of truth instead of two formulas
      that could silently drift apart at some screen size */
   --header-h: 72px;
-  --panel-h: min(calc(100dvh - var(--header-h)), 1000px, 54vw);
+  /* uncapped — always the full header-to-bottom height, same fix as Q2's
+     --panel-w (question-privacy-reveal.component.scss): the old
+     min(..., 1000px, 54vw) capped the panel short on any screen taller/
+     narrower than those numbers, leaving a visible gap above/below it
+     even though &__column centers it. Since &__panel's width is derived
+     FROM this height at the art's real ratio (not the other way around),
+     there's nothing to crop either way — just always fills the column. */
+  --panel-h: calc(100dvh - var(--header-h));
   --panel-w: calc(var(--panel-h) * 1892 / 4071);
   --stage-gap: 32px;
 
@@ -42,10 +49,8 @@
        panel's own centering (&__column's justify-content:center) instead
        of sitting stuck to the top once it's shorter than the column */
     top: calc(var(--header-h) + (100dvh - var(--header-h)) / 2);
-    /* tracks the wardrobe panel's own height formula exactly (capped at
-       1000px/54vw) instead of always filling the viewport — so the cloud
-       shrinks together with the wardrobe instead of staying huge behind
-       a much-shorter capped panel on a tall screen. 85% (not the full
+    /* tracks the wardrobe panel's own height formula (now always the
+       full column height, see --panel-h above) — 85% (not the full
        100%) so the cloud reads as a smaller decorative accent behind the
        panel rather than matching its height exactly. */
     height: calc(var(--panel-h) * 0.85);
@@ -113,12 +118,10 @@
     line-height: 0;
   }
 
-  /* height fills the column (capped at 1000px so it doesn't get huge on
-     tall desktop screens, and at 54vw so a narrow/tall mobile viewport
-     can't blow the resulting width past ~25vw and overlap the character
-     stage or the other side's panel), width auto-follows at the image's
-     real aspect ratio. Expressed against the viewport (100dvh minus the
-     header) rather than "100%" of the column — &__panel-wrap is
+  /* height always fills the column exactly (see --panel-h above), width
+     auto-follows at the image's real aspect ratio. Expressed against the
+     viewport (100dvh minus the header) rather than "100%" of the column
+     — &__panel-wrap is
      auto-height (shrink-to-fit its only child, this img), so a
      percentage here has no definite ancestor to resolve against and
      silently collapses to the image's full natural 4071px size instead
@@ -189,6 +192,44 @@
     cursor: pointer;
     transition: transform 0.15s ease;
 
+    /* idle "hanging on a hook" sway — the standalone `rotate` property
+       (not `transform: rotate()`) so it composes with :hover's `transform:
+       scale(1.5)` below instead of fighting it: a CSS animation drives
+       whichever property it targets every frame for as long as it runs,
+       so if the sway itself used `transform`, it would keep overriding
+       the hover scale the instant it next ticks. rotate/scale/translate
+       are independent from transform precisely so two different motions
+       like this one can layer without needing a wrapper element. */
+    transform-origin: 50% 6%;
+    rotate: 0deg;
+    animation: outfit-picker-hanger-sway var(--sway-duration, 4.5s) ease-in-out infinite;
+    animation-delay: var(--sway-delay, 0s);
+    animation-fill-mode: backwards;
+
+    /* staggered per slot so the 8 garments don't all swing in lockstep —
+       nth-child of the button itself (not a data-driven modifier class,
+       there isn't one) since &__items always renders exactly 4 in a
+       fixed column order */
+    &:nth-child(1) {
+      --sway-delay: 0s;
+      --sway-duration: 4.6s;
+    }
+
+    &:nth-child(2) {
+      --sway-delay: 0.5s;
+      --sway-duration: 5.1s;
+    }
+
+    &:nth-child(3) {
+      --sway-delay: 1.1s;
+      --sway-duration: 4.2s;
+    }
+
+    &:nth-child(4) {
+      --sway-delay: 0.3s;
+      --sway-duration: 4.9s;
+    }
+
     img {
       width: 100%;
       height: 100%;
@@ -204,7 +245,12 @@
     }
 
     &:hover {
-      transform: scale(1.5);
+      transform: scale(1.15);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+      rotate: 0deg;
     }
   }
 
@@ -377,5 +423,16 @@
     bottom: 20px;
     transform: translateX(-50%);
     z-index: 3;
+  }
+}
+
+@keyframes outfit-picker-hanger-sway {
+  0%,
+  100% {
+    rotate: -3deg;
+  }
+
+  50% {
+    rotate: 3deg;
   }
 }
