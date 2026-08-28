@@ -47,34 +47,39 @@
      (card, paperclips, pencil, cup, eraser, note, shirt) — each modifier
      only sets its own position/size and a `--rot` custom property for its
      resting tilt (instead of writing `transform: rotate(Ndeg)` directly).
-     The base transform and the hover transform are both defined ONCE
-     here, driven off that variable: resting = rotate(var(--rot)), hover
-     = rotate(calc(var(--rot) + 10deg)) — a small FIXED delta off each
-     item's OWN resting angle. Earlier this hover rule targeted a literal
-     `rotate(0deg)` for every item regardless of its resting tilt, which
-     was fine for small tilts (-16deg, -8deg) but meant items that needed
-     a large `--rot` just to orient the art correctly (paperclips at 90deg,
-     eraser at 140deg) spun almost all the way around on hover, while
-     shirt (0deg already) barely moved at all — a constant delta instead
-     of a constant target gives every item the same-size subtle wobble no
-     matter what its resting angle is. No shadow (a box-shadow on the
-     id-card art showed a white rectangular corner — none of this art is
-     cleanly alpha-cut to its visual silhouette). Mouse-only so nothing
-     gets stuck "hovered" after a tap on touch devices. */
+     No shadow (a box-shadow on the id-card art showed a white rectangular
+     corner — none of this art is cleanly alpha-cut to its visual
+     silhouette).
+
+     Idle float loop, no interaction required at all (replaced an earlier
+     hover-only wobble — hover doesn't exist on touch, and the ask was for
+     motion that doesn't depend on it). Every item shares one keyframe
+     built around var(--rot) so the bob/tilt layers ON TOP of each item's
+     own resting angle instead of fighting it — `rotate(var(--rot))
+     translateY(...) rotate(Ndeg)` composes as one combined rotation, not
+     two independent ones. Each modifier below sets its own
+     --float-duration/--float-delay so all 8 pieces drift out of sync
+     with each other instead of bobbing in unison, which read as
+     mechanical rather than alive. */
   &__decor {
     position: absolute;
     pointer-events: none;
     display: block;
-    transform: rotate(var(--rot, 0deg));
-    transition: transform 0.25s ease;
+    animation: start-decor-float var(--float-duration, 6s) ease-in-out infinite;
+    animation-delay: var(--float-delay, 0s);
+    /* without this, the browser renders `transform: none` (flat, no
+       --rot tilt at all) for the whole animation-delay window — each
+       item's own delay is staggered specifically so they don't move in
+       sync, so that's a real span of time sitting unrotated before
+       SNAPPING to rotate(var(--rot)) the instant its delay ends and the
+       animation's 0% keyframe finally takes over. `backwards` applies
+       that 0% keyframe retroactively during the delay instead, so every
+       item is already at its correct resting tilt from first paint. */
+    animation-fill-mode: backwards;
 
-    @media (hover: hover) and (pointer: fine) {
-      pointer-events: auto;
-      cursor: default;
-
-      &:hover {
-        transform: rotate(calc(var(--rot, 0deg) + 10deg)) scale(1.08);
-      }
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+      transform: rotate(var(--rot, 0deg));
     }
   }
 
@@ -99,6 +104,7 @@
     left: 3%;
     width: clamp(160px, 23.4vw, 450px);
     --rot: -16deg;
+    --float-duration: 6s;
 
     @media (max-width: 640px) {
       top: -30px;
@@ -114,6 +120,8 @@
     left: 44%;
     width: clamp(50px, 10.4vw, 200px);
     --rot: 90deg;
+    --float-duration: 5.5s;
+    --float-delay: 0.5s;
 
     @media (max-width: 640px) {
       top: 1%;
@@ -129,6 +137,8 @@
     left: -2%;
     width: min(200px, 10.4vw);
     --rot: 2deg;
+    --float-duration: 6.5s;
+    --float-delay: 1s;
 
     @media (max-width: 640px) {
       display: none;
@@ -144,6 +154,8 @@
     left: 57%;
     width: min(200px, 10.4vw);
     --rot: 80deg;
+    --float-duration: 5s;
+    --float-delay: 1.5s;
 
     @media (max-width: 640px) {
       display: none;
@@ -155,6 +167,8 @@
     left: 79%;
     width: clamp(90px, 15.6vw, 300px);
     --rot: -4deg;
+    --float-duration: 7s;
+    --float-delay: 0.3s;
 
     @media (max-width: 640px) {
       top: 4%;
@@ -167,6 +181,8 @@
     left: 23.5%;
     width: clamp(64px, 9.4vw, 180px);
     --rot: -15deg;
+    --float-duration: 6.2s;
+    --float-delay: 0.8s;
 
     @media (max-width: 640px) {
       top: 42%;
@@ -179,6 +195,8 @@
     left: 67%;
     width: clamp(52px, 7.8vw, 150px);
     --rot: 140deg;
+    --float-duration: 5.8s;
+    --float-delay: 1.2s;
 
     @media (max-width: 640px) {
       top: 30%;
@@ -201,6 +219,8 @@
     left: 21%;
     width: clamp(130px, 15.6vw, 300px);
     --rot: -10deg;
+    --float-duration: 6.8s;
+    --float-delay: 0.2s;
     z-index: 10;
 
     @media (max-width: 640px) {
@@ -221,6 +241,8 @@
     right: -4%;
     width: clamp(150px, 18.2vw, 350px);
     --rot: 0deg;
+    --float-duration: 6.4s;
+    --float-delay: 1.6s;
 
     @media (max-width: 640px) {
       bottom: 40px;
@@ -262,12 +284,23 @@
     cursor: pointer;
     transition: transform 0.15s ease;
 
+    /* idle breathing loop — passive, no hover/tap needed, same reasoning
+       as &__decor's own float above (draws the eye without depending on
+       an interaction touch devices don't really have). Lives on the
+       pill alone, not &__cta itself, so it composes fine with &__cta's
+       own hover/active scale (nested transforms just multiply) instead
+       of the two fighting over one element's transform. */
     &-pill {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       display: block;
+      animation: start-cta-breathe 2.6s ease-in-out infinite;
+
+      @media (prefers-reduced-motion: reduce) {
+        animation: none;
+      }
 
       rect {
         transition:
@@ -304,5 +337,57 @@
     &:active {
       transform: scale(0.96);
     }
+  }
+}
+
+/* gentle bob + a touch of extra tilt at the peak — chained rotate()s
+   compose (rotate(var(--rot)) rotate(4deg) = var(--rot)+4deg), so this
+   layers on top of each item's own resting angle instead of overriding
+   it back to a flat 0 mid-loop */
+@keyframes start-decor-float {
+  0%,
+  100% {
+    transform: rotate(var(--rot, 0deg)) translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: rotate(var(--rot, 0deg)) translateY(-10px) rotate(4deg);
+  }
+}
+
+/* subtle, not the same big pop as hover/active — just enough to read as
+   "alive" at rest */
+@keyframes start-cta-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.035);
+    opacity: 0.85;
+  }
+}
+
+/* referenced by name from spawnTrail()'s own inline `animation` style
+   (see the .ts) — every other cursor-trail style had to move inline
+   since Angular's view encapsulation never reaches elements created via
+   plain document.createElement(), but @keyframes names aren't
+   attribute-scoped the way selectors are, so this one still resolves
+   normally from there. translate(-50%,-50%) centers the image ON the
+   spawn point (its own left/top is the raw cursor coordinate, not a
+   top-left corner) — drifts up an extra 20px and shrinks while fading
+   out, the "haze" settling upward instead of just blinking out in
+   place. */
+@keyframes start-trail-fade {
+  0% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%) rotate(var(--trail-rot, 0deg)) scale(0.85);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% - 20px)) rotate(var(--trail-rot, 0deg)) scale(0.55);
   }
 }
