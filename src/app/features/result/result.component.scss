@@ -316,28 +316,47 @@
     list-style: none;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    /* explicit gap, not justify-content:space-between — the 6 rows'
+       combined natural height (each aspect-ratio-derived from &__row-box,
+       see below) already filled ~100% of this 62% area on its own with
+       nothing left over for space-between to distribute, which is why
+       there was visibly ZERO gap between rows regardless of that
+       property. flex:1 on &__row below now gives every row an explicit,
+       EQUAL share of (this height − the gaps) instead, so shrinking that
+       share is what actually creates room for a real gap. */
+    gap: 2.2%;
   }
 
   &__row {
     display: flex;
     align-items: center;
-    gap: 3%;
+    gap: 2%;
+    /* equal share of &__list's height (flex:1, not sized off its own
+       content) — min-height:0 is required for that share to be allowed
+       to end up SMALLER than &__row-box's old aspect-ratio-derived
+       height, which a flex item refuses to shrink below by default */
+    flex: 1 1 0;
+    min-height: 0;
   }
 
   /* same round-dot-dash SVG pill technique as this app's actual buttons
      (sticky-note-button, confirm-checkbox) — NOT a plain CSS `border:
      dashed` (that draws rectangular dashes, visibly off-brand, already
-     flagged once this session on the curtain cord's tooltip). The
-     viewBox (320×50) is deliberately the same aspect ratio as this row
-     is ever rendered at (aspect-ratio below), so the SVG scales
-     uniformly with zero letterboxing/distortion regardless of viewport —
-     same reasoning as every other fixed-aspect dashed pill in this app. */
+     flagged once this session on the curtain cord's tooltip).
+     height:100% + width:fit-content (was aspect-ratio:320/50) — locking
+     an aspect-ratio here is what forced this box's height to inflate
+     every time flex:1 widened it to fill the row, which is exactly what
+     ate all the vertical room meant for the gap above. Letting the SVG
+     stretch non-uniformly (see &__row-pill's width:100% below) instead
+     of preserving its own ratio is a fine tradeoff for a plain rounded-
+     dash pill shape — it just reads as a slightly more elongated pill,
+     nothing structurally breaks the way it would on an illustrated
+     asset. */
   &__row-box {
     position: relative;
     flex: 1;
     min-width: 0;
-    aspect-ratio: 320 / 50;
+    height: 100%;
     display: flex;
     align-items: center;
   }
@@ -345,7 +364,7 @@
   &__row-pill {
     position: absolute;
     inset: 0;
-    width: fit-content;
+    width: 100%;
     height: 100%;
     display: block;
   }
@@ -393,7 +412,7 @@
   &__legend {
     position: absolute;
     left: 12%;
-    top: 75%;
+    top: 76%;
     width: 32%;
     display: flex;
     flex-direction: column;
@@ -407,7 +426,7 @@
     gap: 0.5em;
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: clamp(18px, 1.3vw, 15px);
+    font-size: clamp(16px, 1.3vw, 15px);
     color: var(--color-ink);
     white-space: nowrap;
   }

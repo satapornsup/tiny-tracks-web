@@ -1,4 +1,4 @@
-<app-header pageLabel="สรุปผล" />
+<app-header />
 
 <main class="result">
   <img class="result__margin-decor result__margin-decor--left" src="assets/images/home/decor/margin-cloud.svg" alt=""
@@ -57,7 +57,8 @@
       @for (row of rows; track row.id) {
       <li class="result__row">
         <span class="result__row-box">
-          <svg class="result__row-pill" viewBox="0 0 320 50" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <svg class="result__row-pill" viewBox="0 0 320 50" preserveAspectRatio="none"
+            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <rect x="3" y="3" width="314" height="44" rx="8" fill="var(--color-cream)" stroke="var(--color-rust)"
               stroke-width="1.8" stroke-dasharray="1 15" stroke-linecap="round" />
           </svg>
