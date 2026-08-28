@@ -99,6 +99,37 @@ export class QuestionShellComponent {
   });
 
   onNext(): void {
+    this.captureAnswer();
+    this.goNext();
+  }
+
+  goBack(): void {
+    // same save the Next button does — without this, leaving via Back
+    // (rather than Next) never wrote the current answer into
+    // QuizStateService at all, so returning to this question later found
+    // nothing to restore from and looked like the answer had vanished,
+    // even though it had been confirmed on screen a moment earlier
+    this.captureAnswer();
+    if (this.questionId <= 1) {
+      this.quizState.reset();
+      this.router.navigate(['/home']);
+    } else {
+      this.router.navigate(['/question', this.questionId - 1]);
+    }
+  }
+
+  /** shared by onNext() and goBack() — records whatever's currently
+   *  confirmed on screen, regardless of which direction the player
+   *  leaves in. Gated on nextDisabled() so leaving a still-unconfirmed
+   *  question (e.g. Back on a fresh, untouched visit) doesn't fabricate
+   *  a "confirmed" entry — each sub-widget's own restore logic treats
+   *  any non-null initial value as "was confirmed" (see e.g.
+   *  question-work-clock.component.ts's ngOnInit), so writing one
+   *  prematurely would make a later visit open up falsely marked as
+   *  already answered. */
+  private captureAnswer(): void {
+    if (this.nextDisabled()) return;
+
     if (this.config.interactionType === 'swipe-card') {
       const option = this.swipeCard()?.current();
       this.quizState.recordAnswer(
@@ -149,16 +180,6 @@ export class QuestionShellComponent {
       // stub questions (Q2/Q3/Q4/Q6 pending design) still need a
       // recorded entry so the result recap has something for every id
       this.quizState.recordAnswer(this.questionId, null, false);
-    }
-    this.goNext();
-  }
-
-  goBack(): void {
-    if (this.questionId <= 1) {
-      this.quizState.reset();
-      this.router.navigate(['/home']);
-    } else {
-      this.router.navigate(['/question', this.questionId - 1]);
     }
   }
 
