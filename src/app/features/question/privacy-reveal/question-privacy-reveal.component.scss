@@ -263,8 +263,21 @@
     color: white;
     /* "justify" — stretches each line (except the last) so both its left
        AND right edges line up flush with the block's own edges, instead
-       of only the left edge lining up and the right edge ragged */
+       of only the left edge lining up and the right edge ragged.
+       Chrome vs Safari mismatch: Thai text has few/no literal space
+       characters for the browser to stretch at, and `text-justify`'s
+       default (`auto`) leaves HOW to justify space-poor scripts up to
+       the engine — Chrome stretches between Thai character clusters even
+       on `auto`, Safari doesn't, so the exact same `text-align: justify`
+       visibly justified in Chrome and just sat ragged-right in Safari.
+       `inter-character` makes the behavior explicit (insert the stretch
+       between every character, the standard technique for CJK/Thai-style
+       scripts) instead of leaving it to each engine's own guess — needs
+       Safari 16.4+ (April 2023) to take effect there; older Safari falls
+       back to plain `justify` (i.e. the ragged-right behavior already
+       being seen, not worse than before). */
     text-align: justify;
+    text-justify: inter-character;
   }
 
   &__math-card,
