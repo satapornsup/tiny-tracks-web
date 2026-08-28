@@ -165,6 +165,8 @@
     line-height: 1.4;
     word-spacing: 60%;
     color: white;
+    text-align: justify;
+    text-justify: inter-character;
   }
 
   /* the "getting wrapped in FRAGILE tape" GIF — takes the middle share
@@ -218,7 +220,7 @@
       width: min(820px, calc(100vw - 2 * (var(--panel-w) + var(--stage-gap))));
       aspect-ratio: 4 / 3.15;
       // padding: 0 0 64px;
-      margin-bottom: 8%;
+      margin-bottom: 5%;
     }
   }
 
@@ -385,8 +387,8 @@
   }
 
   &__accept-check {
-    width: 62%;
-    height: 62%;
+    width: 75%;
+    height: 75%;
   }
 
   &__accept-label {
