@@ -11,7 +11,7 @@
   <div class="safety-tips__side safety-tips__side--left" aria-hidden="true"></div>
   <div class="safety-tips__side safety-tips__side--right" aria-hidden="true"></div>
 
-  <div class="safety-tips__stage">
+  <div class="safety-tips__stage" #stage>
     <!-- purely decorative, closed folder tucked in behind item 5 —
          earliest in the DOM (before &__cover and the @for loop) so with
          no explicit z-index it naturally paints furthest back, same
@@ -29,19 +29,32 @@
     </div>
 
     @for (item of itemsBackToFront; track item.id) {
-    <button #itemEl type="button" class="safety-tips__item" [class.safety-tips__item--active]="activeId() === item.id"
+    <div #itemEl class="safety-tips__item" [class.safety-tips__item--active]="activeId() === item.id"
       [style.bottom.px]="activeId() === item.id ? null : item.peek"
-      [style.transform]="activeId() === item.id ? null : 'scale(' + item.scale + ')'" (click)="toggle(item.id)"
-      [attr.aria-label]="'ข้อควรปฏิบัติ ข้อที่ ' + item.id" [attr.aria-pressed]="activeId() === item.id">
+      [style.transform]="activeId() === item.id ? null : 'scale(' + item.scale + ')'"
+      (click)="onPanelClick(item.id)">
       <!-- every item is hand-built the same way, per request — a blank
            folder background (bgImage, no baked-in tag/text) plus real
            DOM text and separate illustration pieces on top. The "0N" tag
            position (left%) is per-item because each folder's own real
            tab notch sits at its own particular spot, not dead-center —
-           see &__item-tag--N in the .scss. -->
+           see &__item-tab--N in the .scss.
+           OPENING only happens via the small tab button below (stops its
+           own click from bubbling up here) — but CLOSING is more lenient
+           per a follow-up request: this outer div's own (click) closes
+           the card too if it's already the active one (onPanelClick
+           below), and a document-level pointerdown in the .ts closes it
+           on a click anywhere outside &__stage as well. Only closing
+           got the extra affordance, not opening — that stayed
+           deliberately tab-only from the earlier request. -->
       <div class="safety-tips__panel">
         <img class="safety-tips__panel-bg" [src]="item.bgImage" alt="" />
-        <span [class]="'safety-tips__item-tag safety-tips__item-tag--' + item.id">0{{ item.id }}</span>
+        <button type="button" [class]="'safety-tips__item-tab safety-tips__item-tab--' + item.id"
+          [class.safety-tips__item-tab--hint]="activeId() === null"
+          (click)="onTabClick($event, item.id)" [attr.aria-label]="'ข้อควรปฏิบัติ ข้อที่ ' + item.id"
+          [attr.aria-pressed]="activeId() === item.id">
+          <span [class]="'safety-tips__item-tag safety-tips__item-tag--' + item.id">0{{ item.id }}</span>
+        </button>
 
         @switch (item.id) {
         @case (1) {
@@ -55,7 +68,7 @@
         <div class="safety-tips__dont">
           <div class="safety-tips__heading">
             <img src="assets/images/safety/dont-word.webp" alt="" class="w-32!" /> <img
-              src="assets/images/safety/x-icon.webp" alt="" class="w-10!" />
+              src="assets/images/safety/x-badge.webp" alt="" class="w-10!" />
           </div>
           <p class="safety-tips__text">โพสต์รูปเด็กขณะอาบน้ำ ไม่สวมเสื้อผ้า<br />หรือ ตอนที่แสดงพฤติกรรมไม่เหมาะสม</p>
         </div>
@@ -65,14 +78,14 @@
         </div>
         }
         @case (2) {
-        <div class="safety-tips__do top-20!">
+        <div class="safety-tips__do">
           <div class="safety-tips__heading">
             <img src="assets/images/safety/do-word.webp" alt="" /> <img src="assets/images/safety/item2-eye-dont.webp"
               alt="" class="w-10!" />
           </div>
           <p class="safety-tips__text">ปิดข้อมูลที่สืบค้นได้จากรูปถ่าย<br />ปิดข้อมูลส่วนตัว</p>
         </div>
-        <div class="safety-tips__dont">
+        <div class="safety-tips__dont top-">
           <div class="safety-tips__heading">
             <img src="assets/images/safety/dont-word.webp" alt="" class="w-32!" /> <img
               src="assets/images/safety/item2-eye-do.webp" alt="" class="w-10!" />
@@ -99,7 +112,7 @@
         <div class="safety-tips__dont top-48!">
           <div class="safety-tips__heading">
             <img src="assets/images/safety/dont-word.svg" alt="" class="w-32!" /> <img
-              src="assets/images/safety/x-icon.webp" alt="" class="w-10!" />
+              src="assets/images/safety/x-badge.webp" alt="" class="w-10!" />
           </div>
           <p class="safety-tips__text text-cream!">บังคับให้เด็กทำงาน<br />ทำงานล่วงเวลานอน หรือ<br />กระทบการใช้ชีวิต
           </p>
@@ -160,7 +173,7 @@
         }
         }
       </div>
-    </button>
+    </div>
     }
   </div>
 

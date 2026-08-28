@@ -156,6 +156,14 @@
     max-width: none;
   }
 
+  /* both blink on the same cycle but offset by half of it (see
+     animation-delay below), so DO and DON'T visibly take turns instead
+     of flashing together at once */
+  &__cover-do,
+  &__cover-dont {
+    animation: safety-tips-cover-blink 3s ease-in-out infinite;
+  }
+
   &__cover-do {
     position: absolute;
     left: 5%;
@@ -163,6 +171,7 @@
     width: 20%;
     height: auto;
     max-width: none;
+    animation-delay: 0s;
   }
 
   &__cover-dont {
@@ -172,6 +181,14 @@
     width: 38%;
     height: auto;
     max-width: none;
+    animation-delay: 1.5s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__cover-do,
+    &__cover-dont {
+      animation: none;
+    }
   }
 
   &__cover-header {
@@ -180,23 +197,23 @@
     top: 2%;
     margin: 0;
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 600;
     font-size: clamp(22px, 1.6vw, 15px);
     color: var(--color-ink);
-    opacity: 0.7;
+    opacity: 0.4;
   }
 
   &__cover-label {
     position: absolute;
     left: 50%;
-    bottom: 5%;
+    bottom: 10%;
     transform: translateX(-50%);
     margin: 0;
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 600;
     font-size: clamp(30px, 1.6vw, 15px);
     color: var(--color-ink);
-    opacity: 0.9;
+    opacity: 0.5;
   }
 
   /* ONE element per item plays BOTH roles — the peeking tab AND the
@@ -229,11 +246,11 @@
     left: 0;
     width: 100%;
     height: var(--card-h);
-    border: none;
-    background: transparent;
-    padding: 0;
-    cursor: pointer;
     text-align: left;
+    /* plain div now, not a button — only &__item-tab below is
+       interactive (see that rule and the .html's own comment for why:
+       tapping anywhere on an already-open card used to close it again,
+       same as tapping its tab specifically) */
     /* bottom-center pivot — idle items scale DOWN toward this point
        (see item.scale in the .ts) instead of rotating, so a further-back
        item reads as "smaller/receding" while its bottom edge (where it
@@ -274,52 +291,105 @@
     pointer-events: none;
   }
 
-  /* sits near the item's own top edge — coincides with the visible
-     peeking sliver in the idle state AND the top of the fully-risen
-     card in the active state, matching the reference mockup showing
-     the item number in both places. Every item's own real background
-     art (bg-N.webp/item2-bg.webp) is genuinely blank now (no baked-in
-     "0N" anywhere — that text used to live inside the flattened
-     aข้อ-3X.webp exports, retired along with the rest of their baked
-     text), so every item needs this real tag, not just item 2 like
-     before. It gets its own small pill background for contrast against
-     the pale cream tab strip every one of these folders has up there. */
-  &__item-tag {
+  /* the actual clickable target now (per request: only the folder's own
+     protruding tab/spine toggles it, not the whole card) — sits near the
+     item's own top edge, coinciding with the visible peeking sliver in
+     the idle state AND the top of the fully-risen card in the active
+     state, matching the reference mockup showing the item number in
+     both places. z-index:2 clears &__panel-bg (z-index:auto, paints
+     first in DOM order) so it's actually reachable, but still well under
+     &__cover's 10/&__item--active's 5 — the tab only ever needs to beat
+     its OWN panel background, nothing else. */
+  &__item-tab {
     position: absolute;
-    top: 4px;
+    top: 0;
+    width: 18%;
+    height: 9%;
+    min-height: 32px;
     transform: translateX(-50%);
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: clamp(25px, 1.6vw, 15px);
-    color: var(--color-ink);
-    opacity: 0.7;
-    pointer-events: none;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  /* affordance so it's obvious the tab (not the whole card) is what's
+     clickable — every item's tab gets it now (raised from just item 1's,
+     the frontmost/first-clickable one, per a follow-up request), and
+     only while nothing is currently open (see the .html/.ts —
+     activeId() === null, not a one-time "seen it" flag, so it comes
+     back every time the stack is idle again, not just once ever).
+     translateX(-50%) has to be baked into the keyframe below, not
+     left on the base rule above — a CSS animation on `transform`
+     overrides the base rule's own transform for as long as it runs.
+     A small rotate wiggle, not translateY/scale (both tried first) —
+     this button is fully transparent (see &__item-tab above), so the
+     ONLY thing visibly moving is the "0N" text INSIDE it; the actual
+     tab-shaped bump is baked into the folder's own static background
+     image and can't move along with it. Sliding the number away from
+     that fixed bump read as broken (a floating digit detached from the
+     shape it labels); scaling it read as growing past the bump's own
+     printed edge at anything past a subtle amount. Rotating in place
+     keeps the number anchored on the exact same spot the whole time —
+     same idea as the curtain character's own idle wiggle elsewhere in
+     this app, just faster/tighter to read as "shake me" rather than a
+     slow sway. */
+  &__item-tab--hint {
+    animation: safety-tips-tab-hint 0.6s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__item-tab--hint {
+      animation: none;
+    }
   }
 
   /* each folder's own real tab notch isn't centered, and isn't in the
      same spot as any other folder's — measured each one's alpha
      channel directly off the real art to find its true center, same
      technique used to find item 2's own 82% originally. */
-  &__item-tag--1 {
-    left: 35%;
+  &__item-tab--1 {
+    left: 42%;
   }
 
-  &__item-tag--2 {
-    left: 76%;
+  &__item-tab--2 {
+    left: 82.5%;
   }
 
-  &__item-tag--3 {
-    left: 59%;
-    color: white;
+  &__item-tab--3 {
+    left: 66%;
   }
 
+  &__item-tab--4 {
+    left: 19.5%;
+  }
+
+  &__item-tab--5 {
+    left: 84.5%;
+  }
+
+  /* every item's own real background art (bg-N.webp/item2-bg.webp) is
+     genuinely blank now (no baked-in "0N" anywhere — that text used to
+     live inside the flattened aข้อ-3X.webp exports, retired along with
+     the rest of their baked text), so every item needs this real tag,
+     not just item 2 like before. Centered inside &__item-tab now (not
+     independently positioned) — that button owns the placement. */
+  &__item-tag {
+    display: block;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(25px, 1.6vw, 15px);
+    color: var(--color-ink);
+    opacity: 0.4;
+    text-align: start;
+    pointer-events: none;
+  }
+
+  &__item-tag--3,
   &__item-tag--4 {
-    left: 13%;
     color: white;
-  }
-
-  &__item-tag--5 {
-    left: 78%;
   }
 
   /* ---- shared content layer, every item builds on this the same way
@@ -351,7 +421,7 @@
   }
 
   &__do {
-    top: 15%;
+    top: 18%;
   }
 
   &__do--wide {
@@ -384,7 +454,7 @@
     font-family: var(--font-display);
     font-weight: 600;
     font-size: clamp(25px, 1.5vw, 14px);
-    line-height: 1.4;
+    line-height: 1.2;
     color: var(--color-ink);
   }
 
@@ -536,9 +606,9 @@
 
   &__item2-id {
     position: absolute;
-    left: -15%;
-    top: 45%;
-    width: 50%;
+    left: -28%;
+    top: 35%;
+    width: 60%;
     height: auto;
     max-width: none;
   }
@@ -546,8 +616,8 @@
   &__item2-shirt {
     position: absolute;
     right: 0;
-    top: 35%;
-    width: 60%;
+    top: 30%;
+    width: 65%;
     height: auto;
     max-width: none;
   }
@@ -556,14 +626,15 @@
     position: absolute;
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: clamp(14px, 1.1vw, 10px);
+    font-size: clamp(16px, 1.1vw, 10px);
     color: var(--color-brand-pink);
     white-space: nowrap;
+    line-height: 1.2;
   }
 
   &__item2-label--school {
     right: 2%;
-    top: 28%;
+    top: 24%;
   }
 
   &__item2-label--schedule {
@@ -573,13 +644,13 @@
   }
 
   &__item2-label--address {
-    left: 38%;
-    top: 60%;
+    left: 35%;
+    top: 58%;
   }
 
   &__item2-label--name {
-    left: 25%;
-    top: 85%;
+    left: 20%;
+    top: 80%;
   }
 
   &__nav {
@@ -594,5 +665,37 @@
 
   &__nav--next {
     right: 20px;
+  }
+}
+
+@keyframes safety-tips-tab-hint {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(0deg);
+  }
+
+  25% {
+    transform: translateX(-50%) rotate(-1deg);
+  }
+
+  75% {
+    transform: translateX(-50%) rotate(1deg);
+  }
+}
+
+/* dips down near the END of each cycle (not centered at 50%) — with a
+   1.5s delay offset between &__cover-do/&__cover-dont (half of this 3s
+   duration), that puts one's dip roughly where the other's is fully
+   visible, reading as the two actually taking turns rather than both
+   dimming in the middle together */
+@keyframes safety-tips-cover-blink {
+  0%,
+  80%,
+  100% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 0.15;
   }
 }

@@ -4,6 +4,7 @@ import {
   ElementRef,
   OnDestroy,
   QueryList,
+  ViewChild,
   ViewChildren,
   signal,
 } from '@angular/core';
@@ -53,7 +54,10 @@ export class SafetyTipsComponent implements AfterViewInit, OnDestroy {
      exactly the stagger order the entrance below wants: the back of the
      stack settles first, the front (closest) one lands last and draws
      the eye. */
-  @ViewChildren('itemEl') private readonly itemEls!: QueryList<ElementRef<HTMLButtonElement>>;
+  @ViewChildren('itemEl') private readonly itemEls!: QueryList<ElementRef<HTMLDivElement>>;
+  /** used only by the document-level outside-click listener below, to
+   *  tell "outside the folder stack" apart from "inside it" */
+  @ViewChild('stage') private readonly stage!: ElementRef<HTMLDivElement>;
   private entranceTween?: gsap.core.Tween;
 
 
@@ -108,6 +112,28 @@ export class SafetyTipsComponent implements AfterViewInit, OnDestroy {
     this.activeId.update((current) => (current === id ? null : id));
   }
 
+  /** the tab is the only thing that OPENS a card — stopPropagation so
+   *  this click doesn't also bubble up into &__item's own onPanelClick
+   *  below, which would immediately re-close whatever this just opened
+   *  (both handlers firing off the same physical click otherwise) */
+  onTabClick(event: MouseEvent, id: SafetyItemId): void {
+    event.stopPropagation();
+    this.toggle(id);
+  }
+
+  /** CLOSING is more lenient than opening, per a follow-up request:
+   *  clicking anywhere on an already-open card's own body now closes it
+   *  too (not just its tab) — but only if it's actually the currently
+   *  active one; clicking an idle item's own (mostly hidden) panel does
+   *  nothing, since opening still only happens via the tab. */
+  onPanelClick(id: SafetyItemId): void {
+    if (this.activeId() === id) this.close();
+  }
+
+  close(): void {
+    this.activeId.set(null);
+  }
+
   /** one-time entrance cascade — every idle item rises from flush-hidden
    *  (bottom:0, behind &__cover, same as the click-driven rise) up to its
    *  own real idle `peek` in back-to-front order, so the stack reads as
@@ -136,9 +162,27 @@ export class SafetyTipsComponent implements AfterViewInit, OnDestroy {
         for (const el of elements) el.style.transition = '';
       },
     });
+
+    document.addEventListener('pointerdown', this.onDocPointerDown);
   }
 
   ngOnDestroy(): void {
     this.entranceTween?.kill();
+    document.removeEventListener('pointerdown', this.onDocPointerDown);
   }
+
+  /** other half of "closing is lenient" (see onPanelClick above) — a
+   *  click anywhere outside the whole folder stack also closes whatever
+   *  card is currently open. pointerdown (not click) so this fires
+   *  before &__item-tab's own click further down if someone clicks a
+   *  DIFFERENT item's tab while one is already open — that tab's own
+   *  toggle() then runs on the resulting click as normal, opening the
+   *  new one right after this closes the old one. */
+  private readonly onDocPointerDown = (event: PointerEvent): void => {
+    if (this.activeId() === null) return;
+    const stageEl = this.stage?.nativeElement;
+    if (stageEl && event.target instanceof Node && !stageEl.contains(event.target)) {
+      this.close();
+    }
+  };
 }
