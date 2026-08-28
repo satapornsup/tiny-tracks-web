@@ -136,10 +136,69 @@
     font-weight: 700;
     font-size: 28px;
     color: var(--color-ink);
+    opacity: 0.55;
 
     @media (max-width: 640px) {
       font-size: 12px;
     }
+  }
+
+  /* phone-frame.webp already has its OWN baked dot-pill graphic (a brown
+     rounded slot with 4 white circle cutouts) right below the photo —
+     these lay real, functional dots exactly on top of those same 4
+     holes instead of adding a new indicator somewhere else on the card.
+     Positions measured directly off the art's own pixels: scanned
+     phone-frame.webp for bright/white runs along the pill's own y (found
+     at ~74% down), which gave 4 blobs centered at 42.58/47.46/52.5/
+     57.42% across — not eyeballed, so this should keep lining up even
+     if the frame art itself gets re-exported at a different resolution
+     (same %, same aspect-ratio-locked container as &__photo above). */
+  &__dots {
+    position: absolute;
+    top: 74.04%;
+    left: 0;
+    width: 100%;
+    height: 0;
+  }
+
+  &__dot {
+    position: absolute;
+    top: 0;
+    width: 2%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: var(--color-ink);
+    opacity: 0.3;
+    transition:
+      opacity 0.2s ease,
+      background 0.2s ease;
+  }
+
+  &__dot--0 {
+    left: 42.58%;
+  }
+
+  &__dot--1 {
+    left: 47.46%;
+  }
+
+  &__dot--2 {
+    left: 52.5%;
+  }
+
+  &__dot--3 {
+    left: 57.42%;
+  }
+
+  /* base opacity/background transition above; the pop itself (scale
+     overshoot) is a one-shot GSAP tween fired from browse() in the .ts
+     the moment a dot becomes active, not a CSS state — a CSS transition
+     on transform would replay every time ANY reactive style recalcs,
+     not just the instant it flips active */
+  &__dot--active {
+    background: var(--color-brand-pink);
+    opacity: 1;
   }
 
   &__confirm {

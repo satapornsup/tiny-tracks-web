@@ -6,7 +6,17 @@
       <img #photoImg class="swipe-card__photo-img" [src]="current().image" [alt]="current().label" />
     </div>
 
-    <span class="swipe-card__counter">{{ index() + 1 }}/{{ options().length }}</span>
+    <span class="swipe-card__counter" #counterText>{{ index() + 1 }}/{{ options().length }}</span>
+
+    <!-- overlays the frame art's own baked dot-pill slot exactly (4
+         white circle holes measured directly off phone-frame.webp's own
+         pixels — see &__dot--N in the .scss) with real, functional dots
+         instead of living somewhere new on the card -->
+    <div class="swipe-card__dots" aria-hidden="true">
+      @for (option of options(); track option.id; let i = $index) {
+      <span #dotEl [class]="'swipe-card__dot swipe-card__dot--' + i" [class.swipe-card__dot--active]="i === index()"></span>
+      }
+    </div>
 
     <app-confirm-checkbox class="swipe-card__confirm" [checked]="confirmed()" (checkedChange)="confirmed.set($event)" />
 
