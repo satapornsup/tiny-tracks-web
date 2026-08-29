@@ -1,7 +1,26 @@
-<app-header pageLabel="PHOTO BOOTH" [hasIcon]="true">
+<app-header pageLabel="TIKTOK FILTER" [hasIcon]="true">
   <img src="assets/images/photo-booth/icon.svg" alt="" aria-hidden="true" />
 </app-header>
 
 <main class="photo-booth">
-  <p class="photo-booth__prompt">PHOTO BOOTH (ยังไม่ได้ออกแบบ)</p>
+  <img class="photo-booth__decor photo-booth__decor--left" src="assets/images/home/decor/margin-cloud.svg" alt=""
+    aria-hidden="true" />
+  <img class="photo-booth__decor photo-booth__decor--right" src="assets/images/home/decor/margin-cloud.svg" alt=""
+    aria-hidden="true" />
+
+  <div class="photo-booth__side photo-booth__side--left" aria-hidden="true"></div>
+  <div class="photo-booth__side photo-booth__side--right" aria-hidden="true"></div>
+
+  <video class="photo-booth__video" src="assets/videos/photo-booth/tiktok-clip.mp4" autoplay muted loop playsinline
+    aria-hidden="true"></video>
+
+  <app-sticky-note-button class="photo-booth__nav photo-booth__nav--back" label="" variant="pink" iconPosition="before"
+    routerLink="/safety">
+    <img src="assets/images/shared/icons/back.svg" alt="" aria-hidden="true" />
+  </app-sticky-note-button>
+
+  <div class="photo-booth__scan" aria-hidden="true">
+    <span class="photo-booth__scan-label">SCAN!</span>
+    <img class="photo-booth__scan-qr" src="assets/images/photo-booth/qr.webp" alt="" />
+  </div>
 </main>

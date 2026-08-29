@@ -1,27 +1,135 @@
 .photo-booth {
   position: relative;
+  z-index: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   height: calc(100dvh - 72px);
-  padding: 40px 24px;
+  overflow: hidden;
   background: var(--color-paper);
 
   @media (max-width: 640px) {
     height: calc(100dvh - 56px);
   }
 
-  &__prompt {
-    margin: 0;
-    max-width: 640px;
-    text-align: center;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 22px;
-    color: var(--color-ink);
+  /* background copied verbatim from safety-tips' own &__decor/&__side —
+     same dotted-cloud + wood-plank-side treatment, per request to make
+     this page's backdrop match that page exactly */
+  &__decor {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: auto;
+    aspect-ratio: 701.09 / 1020.62;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  &__decor--left {
+    left: 0;
+    transform: translateX(-40%);
+  }
+
+  &__decor--right {
+    right: 0;
+    transform: translateX(40%) scaleX(-1);
+  }
+
+  &__side {
+    --side-w: 35px;
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: var(--side-w);
+    overflow: hidden;
+    pointer-events: none;
 
     @media (max-width: 640px) {
-      font-size: 16px;
+      --side-w: 16px;
     }
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3000px;
+      height: var(--side-w);
+      background-image: url("/assets/images/start/footer.webp");
+      background-repeat: repeat-x;
+      background-position: top left;
+      background-size: auto 100%;
+      transform-origin: top left;
+      transform: translate(var(--side-w), 0) rotate(90deg);
+    }
+  }
+
+  &__side--left {
+    left: 0;
+  }
+
+  &__side--right {
+    right: 0;
+    transform: scaleX(-1);
+  }
+
+  /* no phone bezel — per follow-up request, just the clip itself, sized
+     off its own REAL 690:1048 aspect ratio (measured off the actual
+     file), not a generic phone-shape guess — the earlier bezel version
+     used 9:19.5 for the frame, notably narrower than this footage's own
+     ratio, which was quietly cropping it via object-fit:cover */
+  &__video {
+    position: relative;
+    z-index: 1;
+    display: block;
+    height: 88dvh;
+    width: auto;
+    aspect-ratio: 690 / 1048;
+    max-width: 92vw;
+    pointer-events: none;
+
+    @media (max-width: 640px) {
+      height: auto;
+      width: 82vw;
+    }
+  }
+
+  &__nav {
+    position: absolute;
+    bottom: 20px;
+    z-index: 30;
+  }
+
+  &__nav--back {
+    left: 20px;
+  }
+
+  /* bottom-right, same slot &__nav--next would otherwise sit in on
+     every other question — a static QR block instead of a next button,
+     per request ("ไม่มีปุ่ม next ทำเป็น qr scan แทน") */
+  &__scan {
+    position: absolute;
+    right: 5%;
+    bottom: 10%;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    gap: 6px;
+  }
+
+  &__scan-label {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 30px;
+    color: var(--color-brand-pink);
+  }
+
+  &__scan-qr {
+    display: block;
+    width: 20%;
+    height: auto;
+    max-width: none;
   }
 }
