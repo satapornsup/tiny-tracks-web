@@ -65,6 +65,76 @@
     --header-h: 56px;
   }
 
+  /* same instruction-hint design as swipe-card's own &__hint (Q1) — see
+     that component's own comments for the font-size/asterisk-offset
+     values, copied verbatim for visual consistency across questions.
+     Left-anchored near the cord (not top-center like every other
+     question's hint) and allowed to wrap to 2 lines, matching the
+     reference mockup exactly — this page's own top-center real estate
+     is already the blinds strip, not open like the others. z-index
+     above &__blinds (3) so it isn't tucked under the open blinds'
+     lowest sliver at some viewport heights. */
+  /* pops in on every swap (Angular's @if/@else in the .html tears down
+     and recreates this element on each toggle, not just first paint, so
+     the animation naturally replays each time the curtain opens/closes
+     instead of just once) — standalone `scale` property, not
+     `transform`, since &__hint--closed below already needs `transform`
+     for its own translateY(-50%) positioning; animating `transform`
+     here would override that static value for the whole 0.3s instead of
+     composing with it.
+     animation-delay matches &__blinds' own 0.8s close/open transition —
+     without it the new text popped in immediately while the blinds were
+     still visibly mid-slide, reading as ahead of what's actually
+     happening on screen instead of confirming it once it's done.
+     fill-mode:backwards holds the animation's FROM state (opacity:0)
+     for that whole delay — without it the element sits at its
+     un-animated default (fully visible) until the delay ends, then
+     suddenly snaps to invisible before fading in, the same "flash
+     before it animates" bug already fixed once on the Start page's own
+     decor entrance. */
+  &__hint {
+    position: absolute;
+    top: 15%;
+    right: 10%;
+    z-index: 4;
+    max-width: 260px;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 1.3;
+    color: var(--color-ink);
+    animation: curtain-hint-in 0.3s ease-out 0.8s;
+    animation-fill-mode: backwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__hint {
+      animation: none;
+    }
+  }
+
+  /* the closed-state swap (see the .html's own @if/@else) sits beside
+     the cord's OWN closed position instead of reusing the open state's
+     spot — &__cord--closed moves down to top:75% as the blinds finish
+     lowering (see that rule), so this follows it there rather than
+     floating up near the header, disconnected from the cord it's
+     actually about */
+  &__hint--closed {
+    top: 89%;
+    right: 10%;
+    transform: translateY(-50%);
+    text-align: center;
+  }
+
+  &__hint-asterisk {
+    display: inline-block;
+    position: relative;
+    top: 0.11em;
+    vertical-align: middle;
+    font-size: 22px;
+  }
+
   /* 3 peeking faces (the front-facing one is ONE head with both its own
      eyes, not two side-by-side heads — see FaceConfig comment in the
      .ts), pinned to the true screen edges (same technique as work-clock's
@@ -412,64 +482,6 @@
     top: 75%;
   }
 
-  /* same dashed-pill DNA as the rest of this app's buttons (sticky-note-
-     button, confirm-checkbox) rather than a plain OS tooltip — reads the
-     ACTION a click will take ("ปิดม่าน"/"เปิดม่าน" set in the template
-     off curtainClosed()), not the current state, matching how a real
-     toggle button label works. Sits to the LEFT of the cord (which is
-     pinned near the right screen edge) so it never gets clipped off-
-     screen; &__cord is already position:fixed, so it's the containing
-     block for this without needing its own extra position:relative. */
-  /* fixed width/aspect-ratio (not padding-driven auto sizing) so the
-     SVG's viewBox below can match it exactly — a mismatched viewBox
-     aspect ratio is what made work-clock's switch pill letterbox into a
-     narrower-than-intended shape earlier this project, same risk here */
-  &__cord-tooltip {
-    position: absolute;
-    top: 60%;
-    right: calc(100% + 10px);
-    transform: translateY(-50%) translateX(6px);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: clamp(96px, 9vw, 132px);
-    aspect-ratio: 130 / 44;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
-    opacity: 0;
-    pointer-events: none;
-    transition:
-      opacity 0.15s ease,
-      transform 0.15s ease;
-    z-index: 10;
-  }
-
-  &__cord-tooltip-pill {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-
-  &__cord-tooltip-label {
-    position: relative;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: clamp(15px, 1.3vw, 16px);
-    color: var(--color-ink);
-    white-space: nowrap;
-  }
-
-  /* &__cord:hover (not &:hover) — this file's `&` always resolves off
-     the top-level .curtain, so nesting this inside &__cord above would
-     have compiled to .curtain:hover, not .curtain__cord:hover (the same
-     mistake already caught once in outfit-picker's &__check) */
-  &__cord:hover &__cord-tooltip,
-  &__cord:focus-visible &__cord-tooltip {
-    opacity: 1;
-    transform: translateY(-50%) translateX(0);
-  }
-
   &__confirm {
     position: fixed;
     left: 50%;
@@ -517,5 +529,17 @@
 
   75% {
     transform: rotate(2.5deg);
+  }
+}
+
+@keyframes curtain-hint-in {
+  from {
+    opacity: 0;
+    scale: 0.85;
+  }
+
+  to {
+    opacity: 1;
+    scale: 1;
   }
 }

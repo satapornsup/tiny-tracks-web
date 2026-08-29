@@ -1,4 +1,15 @@
 <div class="curtain" (pointermove)="onStagePointerMove($event)">
+  <!-- swaps with curtain state instead of the old hover-only cord
+       tooltip (removed below) — one persistent, always-visible
+       instruction instead of something only a mouse hover could reveal,
+       matching every other question's own hint that's readable without
+       any interaction first. -->
+  @if (!curtainClosed()) {
+  <p class="curtain__hint"><span class="curtain__hint-asterisk">*</span>ปิดม่านเพื่อให้<br>ความเป็นส่วนตัว</p>
+  } @else {
+  <p class="curtain__hint curtain__hint--closed"><span class="curtain__hint-asterisk">*</span>เปิดม่านแสดง<br>สู่สาธารณะ</p>
+  }
+
   @for (face of faces; track face.id) {
   <div class="curtain__face" [class]="'curtain__face--' + face.position">
     <img class="curtain__face-img" [src]="face.faceImg" alt="" aria-hidden="true" />
@@ -29,23 +40,16 @@
     <div #character class="curtain__character" [class.curtain__character--dragging]="dragging()"
       [style.transform]="'translate(' + characterOffset().x + 'px, ' + characterOffset().y + 'px)'"
       (pointerdown)="onCharacterPointerDown($event)">
-      <img class="curtain__character-img" src="assets/images/question/curtain/character.webp" alt="" aria-hidden="true" />
+      <img class="curtain__character-img" src="assets/images/question/curtain/character.webp" alt=""
+        aria-hidden="true" />
     </div>
   </div>
 
   <div class="curtain__blinds" [class.curtain__blinds--closed]="curtainClosed()">
     <div class="curtain__blinds-slats"></div>
   </div>
-  <button class="curtain__cord" type="button" [class.curtain__cord--closed]="curtainClosed()"
-    (click)="toggleCurtain()" [attr.aria-label]="curtainClosed() ? 'เปิดม่าน' : 'ปิดม่าน'">
-    <span class="curtain__cord-tooltip">
-      <svg class="curtain__cord-tooltip-pill" viewBox="0 0 130 44" xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true">
-        <rect x="3" y="3" width="122" height="38" rx="19" fill="var(--color-cream)" stroke="var(--color-rust)"
-          stroke-width="1.8" stroke-dasharray="1 15" stroke-linecap="round" />
-      </svg>
-      <span class="curtain__cord-tooltip-label">{{ curtainClosed() ? 'เปิดม่าน' : 'ปิดม่าน' }}</span>
-    </span>
+  <button class="curtain__cord" type="button" [class.curtain__cord--closed]="curtainClosed()" (click)="toggleCurtain()"
+    [attr.aria-label]="curtainClosed() ? 'เปิดม่าน' : 'ปิดม่าน'">
     <img src="assets/images/question/curtain/cord.webp" alt="" aria-hidden="true" />
   </button>
 
