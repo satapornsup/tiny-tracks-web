@@ -44,7 +44,11 @@ export interface WorkOffer {
   id: string;
   amount: string;
   timeRange: string;
-  isCorrectOn: boolean;
+  /** true = an inappropriate offer that must stay OFF for a correct
+   *  answer; false = optional, toggling it on or off either way doesn't
+   *  affect correctness (no offer requires being switched ON) — see
+   *  question-work-clock.component.ts's isCorrect */
+  forbidden: boolean;
   corner: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }
 

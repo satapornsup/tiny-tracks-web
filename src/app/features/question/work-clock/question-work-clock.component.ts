@@ -27,10 +27,10 @@ export class QuestionWorkClockComponent implements OnInit {
   readonly toggles = signal<Record<string, boolean>>({});
   readonly confirmed = signal(false);
 
-  /** read by QuestionShellComponent when its own Next is pressed — every
-   *  single offer's on/off state has to match the answer key, same
-   *  all-or-nothing scoring as outfit-picker's top+bottom pair */
-  readonly isCorrect = computed(() => this.offers().every((o) => !!this.toggles()[o.id] === o.isCorrectOn));
+  /** read by QuestionShellComponent when its own Next is pressed — wrong
+   *  only if a `forbidden` offer got switched on; the optional ones
+   *  (daytime-short/late-afternoon) can be on or off either way */
+  readonly isCorrect = computed(() => this.offers().every((o) => !o.forbidden || !this.toggles()[o.id]));
 
   ngOnInit(): void {
     const restored = this.initialToggles();
