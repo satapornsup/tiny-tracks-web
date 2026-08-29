@@ -30,6 +30,43 @@
     --edge-w: 16px;
   }
 
+  /* same instruction-hint design as swipe-card's own &__hint (Q1) — see
+     that component's own comments for the font-size/asterisk-offset
+     values, copied verbatim for visual consistency across questions.
+     z-index above &__side (z-index:2) so it isn't tucked behind either
+     side panel if this text's width ever gets close to the gap between
+     them on a narrower viewport.
+     `top` here is relative to THIS root's own box, which already starts
+     below the header (its own rect top sits flush with the header's
+     bottom edge) — adding --header-h again on top of that (tried first,
+     copied from a wrong assumption) double counted it and landed the
+     hint ~72px further down than intended, deep inside &__stage's first
+     card instead of above it. Just 4px, not 12px like the other 3
+     questions' own &__hint — measured &__stage's first card starting
+     only ~43px below this root's own top here (tighter than any other
+     question), so the usual 12px margin alone still overlapped it. */
+  &__hint {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--color-ink);
+    white-space: nowrap;
+  }
+
+  &__hint-asterisk {
+    display: inline-block;
+    position: relative;
+    top: 0.11em;
+    vertical-align: middle;
+    font-size: 22px;
+  }
+
   /* fixed full-height columns flush to the true screen edge, same
      technique as outfit-picker's &__column/privacy-reveal's &__panel */
   &__side {

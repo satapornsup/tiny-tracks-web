@@ -1,4 +1,6 @@
 <div class="work-clock">
+  <p class="work-clock__hint"><span class="work-clock__hint-asterisk">*</span>เลือกกดไลฟ์เพื่อรับงาน</p>
+
   <div class="work-clock__corner work-clock__corner--left">
     <img class="work-clock__corner-circle" src="assets/images/question/q3/corner-circle-left.webp" alt=""
       aria-hidden="true" />
@@ -49,7 +51,7 @@
         {{ offer.amount }}
       </p>
       <p class="work-clock__time mr-16!">{{ offer.timeRange }}</p>
-      <button class="work-clock__switch mr-32!" type="button" [class.work-clock__switch--on]="isOn(offer.id)"
+      <button class="work-clock__switch mr-28!" type="button" [class.work-clock__switch--on]="isOn(offer.id)"
         (click)="toggle(offer.id)">
         @if (!isOn(offer.id)) {
         <svg class="work-clock__switch-pill" viewBox="0 0 100 42" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -69,12 +71,12 @@
     @if (offerAt('top-right'); as offer) {
     <div class="work-clock__card work-clock__card--top-right items-start!">
       <p class="work-clock__live">LIVE<span class="work-clock__live-dot"></span></p>
-      <p class="work-clock__amount ml-10!">
+      <p class="work-clock__amount ml-14!">
         <img src="assets/images/question/q3/folder.webp" alt="" aria-hidden="true" />
         {{ offer.amount }}
       </p>
-      <p class="work-clock__time ml-16!">{{ offer.timeRange }}</p>
-      <button class="work-clock__switch ml-32!" type="button" [class.work-clock__switch--on]="isOn(offer.id)"
+      <p class="work-clock__time ml-18!">{{ offer.timeRange }}</p>
+      <button class="work-clock__switch ml-28!" type="button" [class.work-clock__switch--on]="isOn(offer.id)"
         (click)="toggle(offer.id)">
         @if (!isOn(offer.id)) {
         <svg class="work-clock__switch-pill" viewBox="0 0 100 42" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

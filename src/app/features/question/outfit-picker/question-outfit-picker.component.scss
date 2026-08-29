@@ -21,6 +21,45 @@
   --panel-w: calc(var(--panel-h) * 1892 / 4071);
   --stage-gap: 32px;
 
+  /* same instruction-hint design as swipe-card's own &__hint (Q1) — see
+     that component's own comments for the font-size/asterisk-offset
+     values, copied verbatim for visual consistency across questions.
+     position:fixed (not absolute) — unlike work-clock/curtain/liability-
+     waiver's own root, THIS root centers its own children with
+     display:flex + align-items:center instead of positioning them
+     directly, and its height:100% doesn't resolve against a definite
+     ancestor height (same class of bug as the outfit-picker's own
+     &__panel-wrap ran into early on) — the whole .outfit-picker box
+     ends up shrink-wrapped and vertically re-centered at less than the
+     full viewport height, which put an absolute top offset here nowhere
+     near the actual top of the screen (confirmed: it rendered at
+     y≈202px instead of the intended ≈84px). Fixed sidesteps that
+     entirely by positioning straight off the viewport rather than this
+     component's own unreliable box. z-index above &__margin-decor
+     (z-index:1) so it doesn't get lost under it, though in practice they
+     don't even overlap (margin-decor is vertically centered, not up at
+     the top). */
+  &__hint {
+    position: fixed;
+    bottom: 78%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--color-ink);
+    white-space: nowrap;
+  }
+
+  &__hint-asterisk {
+    display: inline-block;
+    position: relative;
+    top: 0.11em;
+    vertical-align: middle;
+    font-size: 22px;
+  }
+
   @media (max-width: 640px) {
     --header-h: 56px;
     --stage-gap: 14px;

@@ -25,6 +25,38 @@
     --header-h: 56px;
   }
 
+  /* same instruction-hint design as swipe-card's own &__hint (Q1) — see
+     that component's own comments for the font-size/asterisk-offset
+     values, copied verbatim here for visual consistency across
+     questions. Positioned against THIS root (not a shrink-wrapped child
+     like Q1's &__frame needed bottom:100% for) since &__work-clock
+     already fills the full page — but that root's own box already
+     starts BELOW the header (confirmed: its rect top is at the header's
+     own bottom edge), so `top` here is relative to that, not the true
+     viewport top. Adding --header-h on top of it (tried first) pushed
+     this an extra header-height too far down — just a plain small
+     margin from the root's own top is correct. */
+  &__hint {
+    position: absolute;
+    bottom: 90%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--color-ink);
+    white-space: nowrap;
+  }
+
+  &__hint-asterisk {
+    display: inline-block;
+    position: relative;
+    top: 0.11em;
+    vertical-align: middle;
+    font-size: 22px;
+  }
+
   /* pinned to the true screen edge, tall dotted-circle decor peeking in
      from off-screen — same technique as question-shell's Q1 &__decor and
      Q5's &__margin-decor. Purely atmospheric (the interactive hand is
