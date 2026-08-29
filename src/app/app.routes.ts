@@ -9,6 +9,7 @@ import { ResultComponent } from './features/result/result.component';
 import { SafetyTipsComponent } from './features/safety/safety-tips.component';
 import { pageTransitionGuard } from './shared/guards/page-transition.guard';
 import { quizGuard } from './shared/guards/quiz.guard';
+import { resetQuizGuard } from './shared/guards/reset-quiz.guard';
 
 /* one literal route per question id (not "/question/:id") — that keeps
    Q1→Q2 a real route change instead of a param-only reuse, so
@@ -23,9 +24,9 @@ const questionRoutes: Routes = ([1, 2, 3, 4, 5, 6] as const).map((id) => ({
 }));
 
 export const routes: Routes = [
-  { path: '', component: StartComponent, canDeactivate: [pageTransitionGuard] },
-  { path: 'story', component: StoryComponent, canDeactivate: [pageTransitionGuard] },
-  { path: 'home', component: HomeComponent, canDeactivate: [pageTransitionGuard] },
+  { path: '', component: StartComponent, canActivate: [resetQuizGuard], canDeactivate: [pageTransitionGuard] },
+  { path: 'story', component: StoryComponent, canActivate: [resetQuizGuard], canDeactivate: [pageTransitionGuard] },
+  { path: 'home', component: HomeComponent, canActivate: [resetQuizGuard], canDeactivate: [pageTransitionGuard] },
   ...questionRoutes,
   {
     path: 'result',
@@ -33,7 +34,17 @@ export const routes: Routes = [
     canActivate: [quizGuard],
     canDeactivate: [pageTransitionGuard],
   },
-  { path: 'safety', component: SafetyTipsComponent, canDeactivate: [pageTransitionGuard] },
-  { path: 'photo-booth', component: PhotoBoothComponent, canDeactivate: [pageTransitionGuard] },
-  { path: 'concept', component: ConceptComponent, canDeactivate: [pageTransitionGuard] },
+  {
+    path: 'safety',
+    component: SafetyTipsComponent,
+    canActivate: [resetQuizGuard],
+    canDeactivate: [pageTransitionGuard],
+  },
+  {
+    path: 'photo-booth',
+    component: PhotoBoothComponent,
+    canActivate: [resetQuizGuard],
+    canDeactivate: [pageTransitionGuard],
+  },
+  { path: 'concept', component: ConceptComponent, canActivate: [resetQuizGuard], canDeactivate: [pageTransitionGuard] },
 ];
