@@ -404,7 +404,7 @@
   &__private-content {
     position: absolute;
     right: 0%;
-    bottom: -2%;
+    bottom: -4%;
   }
 
   /* "blinks" with just the one static eye.webp — no separate closed-eye
@@ -422,7 +422,7 @@
     bottom: 100%;
     right: 0%;
     width: 30%;
-    margin-bottom: 15px;
+    margin-bottom: 4px;
     pointer-events: none;
     transform-origin: center;
     animation: privacy-reveal-blink 4s ease-in-out infinite;
@@ -430,6 +430,38 @@
     @media (prefers-reduced-motion: reduce) {
       animation: none;
     }
+  }
+
+  /* sits between &__private-eye (pinned above the top of this whole
+     &__private-content box, see that rule's own comment) and
+     &__private-btn below — a plain block, no absolute positioning of its
+     own, so it just stacks in normal flow ahead of the button; the eye's
+     own bottom:100% then lands above IT instead of the button directly,
+     matching the reference mockup's eye → hint → button order. */
+  &__private-hint {
+    margin: 0 0 0px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(16px, 1.6vw, 16px);
+    color: var(--color-ink);
+    text-align: end;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  /* shared by &__private-hint and &__modal-hint — same fix (and same
+     measured 0.19em) as swipe-card's own &__hint-asterisk: rendered "*"
+     and "ล" on an offscreen canvas at a shared font-size and scanned
+     each glyph's actual opaque pixels, since vertical-align:middle alone
+     only centers the SPAN's box against the text's x-height, not where
+     the glyph's ink sits inside that box — "*" draws high on its own,
+     needing this nudge down to land level with the surrounding text. */
+  &__hint-asterisk {
+    display: inline-block;
+    position: relative;
+    top: 0.11em;
+    vertical-align: middle;
+    font-size: clamp(22px, 1.6vw, 22px);
   }
 
   &__private-btn {
@@ -506,7 +538,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 14px;
+    gap: 4px;
     padding: 0 24px;
     text-align: center;
   }
@@ -524,14 +556,23 @@
     color: white;
   }
 
+  &__modal-hint {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
+    color: white;
+    opacity: 0.8;
+  }
+
   &__modal-post {
-    padding: 10px 30px;
+    padding: 5px 20px;
     border: 1.5px solid white;
     border-radius: 10px;
     background: transparent;
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 35px;
+    font-size: 30px;
     letter-spacing: 0.06em;
     color: white;
     cursor: pointer;
