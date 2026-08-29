@@ -119,11 +119,23 @@
     gap: 6px;
   }
 
+  /* idle pulse so it reads as a call-to-action toward the QR code, not
+     just a static label — same idea as the safety-tips tab hint/curtain
+     text elsewhere in this app. Standalone `scale` (not `transform`) so
+     it can't collide with any transform this element might pick up
+     later, same reasoning as those other two. */
   &__scan-label {
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 30px;
     color: var(--color-brand-pink);
+    animation: photo-booth-scan-pulse 1.4s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__scan-label {
+      animation: none;
+    }
   }
 
   &__scan-qr {
@@ -131,5 +143,16 @@
     width: 20%;
     height: auto;
     max-width: none;
+  }
+}
+
+@keyframes photo-booth-scan-pulse {
+  0%,
+  100% {
+    scale: 1;
+  }
+
+  50% {
+    scale: 1.12;
   }
 }
