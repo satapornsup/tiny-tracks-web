@@ -1,6 +1,15 @@
 <app-header />
 
 <main class="result">
+  @if (phase() === 'clip') {
+  <video #clip class="result__clip" [class.result__clip--closing]="closing()" [src]="clipSrc()" autoplay playsinline
+    (ended)="onClipEnded()"></video>
+  <button class="result__skip" [class.result__skip--closing]="closing()" type="button" (click)="skipClip()">
+    <span class="result__skip-word" aria-hidden="true"></span>
+    <span class="result__skip-sr">SKIP</span>
+  </button>
+  } @else {
+  <div class="result__recap">
   <img class="result__margin-decor result__margin-decor--left" src="assets/images/home/decor/margin-cloud.svg" alt=""
     aria-hidden="true" />
   <img class="result__margin-decor result__margin-decor--right" src="assets/images/home/decor/margin-cloud.svg" alt=""
@@ -88,4 +97,6 @@
     routerLink="/safety">
     <img src="assets/images/shared/icons/next.svg" alt="" aria-hidden="true" />
   </app-sticky-note-button>
+  </div>
+  }
 </main>

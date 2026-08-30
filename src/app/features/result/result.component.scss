@@ -205,6 +205,97 @@
     transform: scaleX(-1);
   }
 
+  /* ---- clip step, shown before the recap card — same technique as
+     StoryComponent's own clip: plain centered <video> + a masked "SKIP"
+     word button, no background decor at all while this phase is active
+     (the @else branch in the template is what brings the decor back for
+     the recap phase). Reuses story's own skip-word.svg mask asset since
+     it's just a generic "SKIP" wordmark, not story-specific content. ---- */
+  /* fades out over the same CLOSING_MS the .ts waits before actually
+     flipping phase to 'recap' — a plain cut felt abrupt, this way the
+     clip/skip dissolve first and the recap fades in right after (see
+     &__recap below) instead of one hard swap */
+  &__clip {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 1;
+    transition: opacity 0.32s ease;
+  }
+
+  &__clip--closing {
+    opacity: 0;
+  }
+
+  &__skip {
+    position: absolute;
+    left: 50%;
+    bottom: 32px;
+    transform: translateX(-50%);
+    display: block;
+    border: none;
+    background: transparent;
+    padding: 8px;
+    cursor: pointer;
+    opacity: 1;
+    transition: opacity 0.32s ease;
+  }
+
+  &__skip--closing {
+    opacity: 0;
+  }
+
+  &__skip-word {
+    display: block;
+    width: 130px;
+    aspect-ratio: 145.44 / 44.89;
+    background-color: var(--color-ink);
+    mask-image: url("/assets/images/story/skip-word.svg");
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    mask-position: center;
+    transition: background-color 0.15s ease;
+
+    .result__skip:hover & {
+      background-color: var(--color-brand-green);
+    }
+  }
+
+  &__skip-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* wraps the whole recap phase (decor + card + action button) purely so
+     it has one thing to fade in on — a fresh @else block has no natural
+     "just arrived" transition of its own, so this is what actually makes
+     the cut from the clip feel like a cross-fade instead of a hard swap.
+     position:static (no positioning context of its own) so every
+     absolutely-positioned child inside still measures against .result
+     itself exactly as before, unchanged. */
+  &__recap {
+    animation: result-recap-fade-in 0.35s ease-out both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__clip,
+    &__skip {
+      transition: none;
+    }
+
+    &__recap {
+      animation: none;
+    }
+  }
+
   /* ---- the folder card itself (สรุปผล.webp) — everything below is new
      to this page, not copied from Home ---- */
 
@@ -463,6 +554,16 @@
 
   50% {
     transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+@keyframes result-recap-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
     opacity: 1;
   }
 }
