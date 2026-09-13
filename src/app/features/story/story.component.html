@@ -3,7 +3,8 @@
 </app-header>
 
 <main class="story">
-  <video #clip class="story__clip" src="assets/images/story/story.mp4" autoplay loop playsinline></video>
+  <video #clip class="story__clip" src="assets/images/story/story.mp4" autoplay playsinline
+    (ended)="onClipEnded()"></video>
   <button class="story__skip" type="button" (click)="skipClip()">
     <span class="story__skip-word" aria-hidden="true"></span>
     <span class="story__skip-sr">SKIP</span>

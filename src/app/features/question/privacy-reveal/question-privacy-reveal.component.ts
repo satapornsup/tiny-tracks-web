@@ -36,7 +36,7 @@ export class QuestionPrivacyRevealComponent implements OnInit {
    *  that answer only exists because the player had it open at the
    *  moment they left, so landing on the revealed page on Back would
    *  show a state that never matched what they actually left on. */
-  readonly modalOpen = signal(false);
+  readonly modalOpen = signal(true);
 
   /** live at read-time, not frozen at confirm-time — whatever the modal
    *  actually is showing the MOMENT this is read (QuestionShellComponent

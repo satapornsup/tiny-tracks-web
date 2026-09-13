@@ -1,4 +1,10 @@
-import { Component, DestroyRef, ElementRef, inject, viewChild } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  inject,
+  viewChild,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 
@@ -33,6 +39,10 @@ export class StoryComponent {
     });
   }
 
+  onClipEnded(): void {
+    this.router.navigate(['/home']);
+  }
+
   skipClip(): void {
     /* pause the instant the user clicks — not just on eventual destroy.
      * pageTransitionGuard (see routes) holds navigation open for ~0.2-0.4s
@@ -41,6 +51,6 @@ export class StoryComponent {
      * crossfade window, which sounds like it's "overlapping" whatever
      * loads next rather than stopping when Skip was pressed. */
     this.clip()?.nativeElement.pause();
-    this.router.navigate(['/home']);
+    this.onClipEnded();
   }
 }
